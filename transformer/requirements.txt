@@ -1,0 +1,2 @@
+meilisearch
+psycopg2-binary

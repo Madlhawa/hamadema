@@ -1,0 +1,3 @@
+scrapy
+scrapy-curl-cffi
+psycopg2-binary

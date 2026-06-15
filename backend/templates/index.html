@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lanka Aggregator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lanka Aggregator</h1>
+            <p>Search products across multiple Sri Lankan sites instantly.</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for products (e.g. laptop, phone)..." autofocus>
+                <button onclick="performSearch()">Search</button>
+            </div>
+
+            <div id="loading" class="hidden">Loading results...</div>
+            <div id="results" class="results-grid"></div>
+        </main>
+    </div>
+
+    <script>
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+
+            resultsDiv.innerHTML = '';
+            
+            if (!query.trim()) return;
+
+            loadingDiv.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                loadingDiv.classList.add('hidden');
+
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                    return;
+                }
+
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<p class="no-results">No products found.</p>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${item.title || 'Unknown Product'}</h3>
+                        <p class="price">${item.price || 'Price N/A'}</p>
+                        <p class="source">Source: ${item.source_site}</p>
+                        ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
+                    `;
+                    resultsDiv.appendChild(card);
+                });
+            } catch (err) {
+                loadingDiv.classList.add('hidden');
+                resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
+            }
+        }
+
+        // Trigger search on Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
