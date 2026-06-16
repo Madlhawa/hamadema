@@ -58,7 +58,7 @@
                     card.className = 'card';
                     card.innerHTML = `
                         <div class="card-img-wrapper">
-                            ${item.image_url ? \`<img src="\${item.image_url}" alt="\${item.title || 'Product'}" loading="lazy">\` : \`<div class="no-image">No Image</div>\`}
+                            ${item.image_url ? `<img src="${item.image_url}" alt="${item.title || 'Product'}" loading="lazy">` : `<div class="no-image">No Image</div>`}
                         </div>
                         <div class="card-content">
                             <h3>${item.title || 'Unknown Product'}</h3>
