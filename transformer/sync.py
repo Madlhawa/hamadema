@@ -8,8 +8,18 @@ import re
 def parse_price(price_str):
     if not price_str:
         return 0
-    cleaned = re.sub(r'[^\d]', '', str(price_str))
-    return int(cleaned) if cleaned else 0
+    
+    if isinstance(price_str, (int, float)):
+        return int(price_str)
+
+    # Remove all characters except digits and the decimal point
+    cleaned = re.sub(r'[^\d.]', '', str(price_str))
+    if cleaned:
+        try:
+            return int(float(cleaned))
+        except ValueError:
+            return 0
+    return 0
 
 # DB Settings
 DB_SETTINGS = {
@@ -50,12 +60,16 @@ def run_sync():
     documents = []
     for row in rows:
         item_id, source, payload = row
+        
+        price_num = parse_price(payload.get("price", "0"))
+        formatted_price = f"Rs. {price_num:,}" if price_num > 0 else "N/A"
+        
         doc = {
             "id": str(item_id),
             "source_site": source,
             "title": payload.get("title", f"Unknown Title from {source}"),
-            "price": payload.get("price", "N/A"),
-            "price_numeric": parse_price(payload.get("price", "0")),
+            "price": formatted_price,
+            "price_numeric": price_num,
             "url": payload.get("url", ""),
             "image_url": payload.get("image_url", ""),
             "stock_status": "Out of Stock" if "out" in str(payload.get("stock_status", "")).lower() else "In Stock",
