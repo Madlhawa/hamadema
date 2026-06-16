@@ -60,13 +60,17 @@
                 <div class="results-container">
                     <div id="loading" class="hidden">Loading results...</div>
                     <div id="results" class="results-grid"></div>
+                    <div id="pagination" class="pagination"></div>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        async function performSearch() {
+        let currentPage = 1;
+
+        async function performSearch(page = 1) {
+            currentPage = page;
             const query = document.getElementById('searchInput').value;
             const sortFilter = document.getElementById('sortFilter').value;
             const minPrice = document.getElementById('minPrice').value;
@@ -78,8 +82,10 @@
 
             const resultsDiv = document.getElementById('results');
             const loadingDiv = document.getElementById('loading');
+            const paginationDiv = document.getElementById('pagination');
 
             resultsDiv.innerHTML = '';
+            paginationDiv.innerHTML = '';
             
             if (!query.trim()) return;
 
@@ -90,7 +96,7 @@
             loadingDiv.classList.remove('hidden');
 
             try {
-                let url = `/search?q=${encodeURIComponent(query)}`;
+                let url = `/search?q=${encodeURIComponent(query)}&page=${currentPage}`;
                 if (sortFilter) url += `&sort=${encodeURIComponent(sortFilter)}`;
                 if (sources) url += `&source=${encodeURIComponent(sources)}`;
                 if (minPrice) url += `&min_price=${encodeURIComponent(minPrice)}`;
@@ -107,12 +113,12 @@
                     return;
                 }
 
-                if (data.length === 0) {
+                if (!data.hits || data.hits.length === 0) {
                     resultsDiv.innerHTML = '<p class="no-results">No products found.</p>';
                     return;
                 }
 
-                data.forEach(item => {
+                data.hits.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
@@ -128,6 +134,21 @@
                     `;
                     resultsDiv.appendChild(card);
                 });
+
+                // Render Pagination
+                const totalPages = Math.ceil(data.totalHits / data.limit);
+                if (totalPages > 1) {
+                    paginationDiv.innerHTML = `
+                        <button onclick="performSearch(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
+                        <span class="page-info">Page ${currentPage} of ${totalPages}</span>
+                        <button onclick="performSearch(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
+                    `;
+                }
+                
+                if (currentPage > 1) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
             } catch (err) {
                 loadingDiv.classList.add('hidden');
                 resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
@@ -137,7 +158,14 @@
         // Trigger search on Enter
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                performSearch();
+                performSearch(1);
+            }
+        });
+        
+        // Ensure changing filters resets to page 1
+        document.querySelectorAll('select, input[type="checkbox"], input[type="number"]').forEach(el => {
+            if(el.id !== 'searchInput') {
+                el.addEventListener('change', () => performSearch(1));
             }
         });
     </script>

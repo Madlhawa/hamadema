@@ -26,11 +26,18 @@ def search():
     max_price = request.args.get('max_price', '')
     in_stock = request.args.get('in_stock', 'false').lower() == 'true'
     
+    page = int(request.args.get('page', 1))
+    limit = 24
+    offset = (page - 1) * limit
+    
     if not meili_client:
         return jsonify({"error": "Search engine not available"}), 500
         
     try:
-        search_params = {'limit': 50}
+        search_params = {
+            'limit': limit,
+            'offset': offset
+        }
         
         filter_conditions = []
         if source_param:
@@ -54,7 +61,13 @@ def search():
             search_params['sort'] = [sort_param]
             
         results = meili_client.index('items').search(query, search_params)
-        return jsonify(results['hits'])
+        
+        return jsonify({
+            'hits': results['hits'],
+            'totalHits': results.get('estimatedTotalHits', 0),
+            'page': page,
+            'limit': limit
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
