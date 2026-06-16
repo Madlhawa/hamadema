@@ -28,16 +28,16 @@ with DAG(
     )
 
     # Task 2: Run the Wasi Scrapy Spider
-    run_wasi = BashOperator(
-        task_id='run_wasi_spider',
-        bash_command='cd /opt/app/scraper && scrapy crawl wasi',
+    run_bigdeals_spider = BashOperator(
+        task_id='run_bigdeals_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl bigdeals',
     )
 
     # Task 3: Run the Transformer script
-    run_transformer = BashOperator(
+    run_data_transformer = BashOperator(
         task_id='run_data_transformer',
         bash_command='cd /opt/app/transformer && python sync.py',
     )
 
     # Define execution order
-    [run_nanotek, run_wasi] >> run_transformer
+    [run_nanotek, run_bigdeals_spider] >> run_data_transformer
