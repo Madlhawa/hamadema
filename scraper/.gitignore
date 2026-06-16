@@ -1,1 +1,4 @@
+_pycache__/
+*.pyc
+
 proxies.txt
