@@ -27,13 +27,19 @@ class BigDealsSpider(scrapy.Spider):
             if title and price_text:
                 price_clean = float(price_text.replace("Rs", "").replace(",", "").strip())
                 
-                yield {
+                raw_payload = {
                     "title": title.strip(),
                     "price": price_clean,
                     "url": url,
                     "image_url": image_url,
                     "in_stock": in_stock,
+                    "stock_status": "In Stock" if in_stock else "Out of Stock",
                     "store": "Bigdeals",
+                }
+                
+                yield {
+                    "source_site": "bigdeals.lk",
+                    "raw_payload": raw_payload
                 }
 
         # Pagination
