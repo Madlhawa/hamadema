@@ -10,12 +10,7 @@ class WasiSpider(scrapy.Spider):
         "https://www.wasi.lk/product-category/electronic-devices/monitors/",
         "https://www.wasi.lk/product-category/electronic-devices/keyboards-mouse/"
     ]
-    custom_settings = {
-        'DOWNLOADER_MIDDLEWARES': {
-            'lanka_scraper.middlewares.RotatingProxyMiddleware': None,
-        },
-        'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    }
+
 
     def start_requests(self):
         for url in self.start_urls:

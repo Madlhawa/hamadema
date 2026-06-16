@@ -33,13 +33,13 @@ DOWNLOADER_MIDDLEWARES = {
     'lanka_scraper.middlewares.RotatingProxyMiddleware': 100,
 }
 
-# Enable and configure the AutoThrottle extension (disabled by default)
-# See https://docs.scrapy.org/en/latest/topics/autothrottle.html
-AUTOTHROTTLE_ENABLED = True
-# The initial download delay
-AUTOTHROTTLE_START_DELAY = 5
-# The maximum download delay to be set in case of high latencies
-AUTOTHROTTLE_MAX_DELAY = 60
-# The average number of requests Scrapy should be sending in parallel to
-# each remote server
-AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
+# --- HIGH CONCURRENCY SETTINGS FOR LARGE PROXY POOLS ---
+# Send many requests in parallel since we have 100 proxies
+CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS_PER_DOMAIN = 32
+
+# Disable the delay so it scrapes as fast as possible across all IPs
+DOWNLOAD_DELAY = 0
+
+# Disable AutoThrottle so it doesn't slow down the spider artificially
+AUTOTHROTTLE_ENABLED = False
