@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 import meilisearch
+import os
 
 app = Flask(__name__)
 
-MEILI_HOST = "http://localhost:7700"
-MEILI_MASTER_KEY = "masterKeyToChange123"
+MEILI_HOST = os.environ.get("MEILI_HOST", "http://localhost:7700")
+MEILI_MASTER_KEY = os.environ.get("MEILI_MASTER_KEY", "masterKeyToChange123")
 
 try:
     meili_client = meilisearch.Client(MEILI_HOST, MEILI_MASTER_KEY)

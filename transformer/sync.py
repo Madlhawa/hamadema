@@ -2,18 +2,20 @@ import psycopg2
 import meilisearch
 from datetime import datetime
 
+import os
+
 # DB Settings
 DB_SETTINGS = {
-    "dbname": "lanka_aggregator",
-    "user": "scraper_user",
-    "password": "supersecret",
-    "host": "localhost",
-    "port": "5432",
+    "dbname": os.environ.get("POSTGRES_DB", "lanka_aggregator"),
+    "user": os.environ.get("POSTGRES_USER", "scraper_user"),
+    "password": os.environ.get("POSTGRES_PASSWORD", "supersecret"),
+    "host": os.environ.get("POSTGRES_HOST", "localhost"),
+    "port": os.environ.get("POSTGRES_PORT", "5432"),
 }
 
 # Meilisearch Settings
-MEILI_HOST = "http://localhost:7700"
-MEILI_MASTER_KEY = "masterKeyToChange123"
+MEILI_HOST = os.environ.get("MEILI_HOST", "http://localhost:7700")
+MEILI_MASTER_KEY = os.environ.get("MEILI_MASTER_KEY", "masterKeyToChange123")
 
 def run_sync():
     print("Starting sync process...")

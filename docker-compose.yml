@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     environment:
-      POSTGRES_USER: scraper_user
-      POSTGRES_PASSWORD: supersecret
-      POSTGRES_DB: lanka_aggregator
+      POSTGRES_USER: ${POSTGRES_USER:-scraper_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supersecret}
+      POSTGRES_DB: ${POSTGRES_DB:-lanka_aggregator}
     ports:
       - "5432:5432"
     volumes:
@@ -18,12 +18,53 @@ services:
     image: getmeili/meilisearch:v1.6
     container_name: meilisearch_engine
     environment:
-      MEILI_MASTER_KEY: masterKeyToChange123
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKeyToChange123}
       MEILI_ENV: development
     ports:
       - "7700:7700"
     volumes:
       - meilisearch_data:/meili_data
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: flask_backend
+    ports:
+      - "80:5000"
+    environment:
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
+    depends_on:
+      - meilisearch
+    restart: unless-stopped
+
+  scraper:
+    build: ./scraper
+    container_name: lanka_scraper
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-lanka_aggregator}
+      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecret}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  transformer:
+    build: ./transformer
+    container_name: data_transformer
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-lanka_aggregator}
+      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecret}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - MEILI_HOST=http://meilisearch:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
+    depends_on:
+      - postgres
+      - meilisearch
     restart: unless-stopped
 
 volumes:
