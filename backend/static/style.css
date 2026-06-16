@@ -244,6 +244,7 @@ button:active {
 }
 
 .card-img-wrapper {
+    position: relative;
     height: 160px;
     background-color: #ffffff;
     display: flex;
@@ -252,6 +253,37 @@ button:active {
     border-bottom: 1px solid #e2e8f0;
     padding: 1rem;
     overflow: hidden;
+}
+
+.badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 10;
+}
+
+.badge-in-stock {
+    background-color: #16a34a;
+    color: white;
+}
+
+.badge-out-of-stock {
+    background-color: #dc2626;
+    color: white;
+}
+
+.title-tag {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
 }
 
 .card-img-wrapper img {

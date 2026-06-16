@@ -124,15 +124,15 @@
                     card.className = 'card';
                     card.innerHTML = `
                         <div class="card-img-wrapper">
+                            <span class="badge ${item.stock_status === 'In Stock' ? 'badge-in-stock' : 'badge-out-of-stock'}">${item.stock_status || 'Unknown'}</span>
                             ${item.image_url ? `<img src="${item.image_url}" alt="${item.title || 'Product'}" loading="lazy">` : `<div class="no-image">No Image</div>`}
                         </div>
                         <div class="card-content">
-                            <h3>${item.title || 'Unknown Product'}</h3>
+                            <h3>
+                                ${item.title || 'Unknown Product'}
+                                <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
+                            </h3>
                             <p class="price">${item.price || 'Price N/A'}</p>
-                            <div class="tags">
-                                <span class="tag tag-source">${item.source_site.replace('.lk', '')}</span>
-                                <span class="tag ${item.stock_status === 'In Stock' ? 'tag-stock-in' : 'tag-stock-out'}">${item.stock_status || 'Unknown'}</span>
-                            </div>
                             ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
                         </div>
                     `;
