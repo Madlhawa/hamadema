@@ -13,17 +13,15 @@ class WasiSpider(scrapy.Spider):
     custom_settings = {
         'DOWNLOADER_MIDDLEWARES': {
             'lanka_scraper.middlewares.RotatingProxyMiddleware': None,
-        }
+        },
+        'USER_AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     }
 
     def start_requests(self):
         for url in self.start_urls:
             yield Request(
                 url=url,
-                callback=self.parse,
-                meta={
-                    "impersonate": "chrome116"
-                }
+                callback=self.parse
             )
 
     def parse(self, response):
@@ -87,8 +85,5 @@ class WasiSpider(scrapy.Spider):
         if next_page:
             yield Request(
                 url=next_page,
-                callback=self.parse,
-                meta={
-                    "impersonate": "chrome116"
-                }
+                callback=self.parse
             )
