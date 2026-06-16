@@ -5,8 +5,8 @@ NEWSPIDER_MODULE = "lanka_scraper.spiders"
 
 # --- ANTI-BOT CONFIGURATION (scrapy-curl-cffi) ---
 DOWNLOAD_HANDLERS = {
-    "http": "scrapy_curl_cffi.CurlCffiDownloadHandler",
-    "https": "scrapy_curl_cffi.CurlCffiDownloadHandler",
+    "http": "scrapy_curl_cffi.handler.CurlCffiDownloadHandler",
+    "https": "scrapy_curl_cffi.handler.CurlCffiDownloadHandler",
 }
 
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
