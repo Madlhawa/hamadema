@@ -1,11 +1,11 @@
 :root {
-    --bg-color: #0f172a;
-    --card-bg: #1e293b;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --accent: #10b981;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --accent: #f97316;
 }
 
 body {
@@ -54,7 +54,7 @@ input {
     max-width: 600px;
     padding: 1rem 1.5rem;
     border-radius: 9999px;
-    border: 1px solid #334155;
+    border: 1px solid #cbd5e1;
     background-color: var(--card-bg);
     color: var(--text-main);
     font-size: 1.1rem;
@@ -108,8 +108,9 @@ button:active {
     background-color: var(--card-bg);
     border-radius: 12px;
     padding: 0;
-    border: 1px solid #334155;
-    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -124,7 +125,7 @@ button:active {
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border-color: var(--primary);
 }
 
@@ -152,8 +153,8 @@ button:active {
     text-align: center;
     padding: 0.75rem 1rem;
     border-radius: 8px;
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #60a5fa;
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
     text-decoration: none;
     font-weight: 600;
     transition: background-color 0.3s;
@@ -182,7 +183,7 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid #e2e8f0;
     padding: 1rem;
     overflow: hidden;
 }
