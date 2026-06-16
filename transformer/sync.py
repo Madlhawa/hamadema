@@ -3,6 +3,13 @@ import meilisearch
 from datetime import datetime
 
 import os
+import re
+
+def parse_price(price_str):
+    if not price_str:
+        return 0
+    cleaned = re.sub(r'[^\d]', '', str(price_str))
+    return int(cleaned) if cleaned else 0
 
 # DB Settings
 DB_SETTINGS = {
@@ -23,9 +30,9 @@ def run_sync():
         client = meilisearch.Client(MEILI_HOST, MEILI_MASTER_KEY)
         index = client.index('items')
         
-        # Ensure sorting, filtering settings if needed
-        # index.update_sortable_attributes(['price'])
-        # index.update_filterable_attributes(['source_site'])
+        # Ensure sorting, filtering settings
+        index.update_sortable_attributes(['price_numeric'])
+        index.update_filterable_attributes(['source_site', 'price_numeric', 'stock_status'])
     except Exception as e:
         print(f"Could not connect to Meilisearch: {e}")
         return
@@ -48,8 +55,10 @@ def run_sync():
             "source_site": source,
             "title": payload.get("title", f"Unknown Title from {source}"),
             "price": payload.get("price", "N/A"),
+            "price_numeric": parse_price(payload.get("price", "0")),
             "url": payload.get("url", ""),
             "image_url": payload.get("image_url", ""),
+            "stock_status": "Out of Stock" if "out" in str(payload.get("stock_status", "")).lower() else "In Stock",
             "synced_at": datetime.utcnow().isoformat()
         }
         documents.append(doc)

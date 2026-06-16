@@ -20,13 +20,40 @@ def index():
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('q', '')
+    sort_param = request.args.get('sort', '')
+    source_param = request.args.get('source', '')
+    min_price = request.args.get('min_price', '')
+    max_price = request.args.get('max_price', '')
+    in_stock = request.args.get('in_stock', 'false').lower() == 'true'
+    
     if not meili_client:
         return jsonify({"error": "Search engine not available"}), 500
         
     try:
-        results = meili_client.index('items').search(query, {
-            'limit': 20
-        })
+        search_params = {'limit': 50}
+        
+        filter_conditions = []
+        if source_param:
+            sources_filter = " OR ".join([f"source_site = '{s.strip()}'" for s in source_param.split(',') if s.strip()])
+            if sources_filter:
+                filter_conditions.append(f"({sources_filter})")
+            
+        if min_price and min_price.isdigit():
+            filter_conditions.append(f"price_numeric >= {min_price}")
+            
+        if max_price and max_price.isdigit():
+            filter_conditions.append(f"price_numeric <= {max_price}")
+            
+        if in_stock:
+            filter_conditions.append("stock_status = 'In Stock'")
+            
+        if filter_conditions:
+            search_params['filter'] = filter_conditions
+            
+        if sort_param:
+            search_params['sort'] = [sort_param]
+            
+        results = meili_client.index('items').search(query, search_params)
         return jsonify(results['hits'])
     except Exception as e:
         return jsonify({"error": str(e)}), 500

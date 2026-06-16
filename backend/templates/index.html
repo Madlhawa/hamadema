@@ -20,14 +20,62 @@
                 <button onclick="performSearch()">Search</button>
             </div>
 
-            <div id="loading" class="hidden">Loading results...</div>
-            <div id="results" class="results-grid"></div>
+            <div class="layout-grid">
+                <aside class="sidebar">
+                    <h3 class="sidebar-title">Filters</h3>
+                    
+                    <div class="filter-group">
+                        <label for="sortFilter">Sort By</label>
+                        <select id="sortFilter" onchange="performSearch()">
+                            <option value="">Relevance</option>
+                            <option value="price_numeric:asc">Price: Low to High</option>
+                            <option value="price_numeric:desc">Price: High to Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Store</label>
+                        <div class="checkbox-list">
+                            <label><input type="checkbox" name="source" value="nanotek.lk" onchange="performSearch()"> Nanotek</label>
+                            <!-- You can add more stores dynamically or statically here -->
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Price Range (LKR)</label>
+                        <div class="price-inputs">
+                            <input type="number" id="minPrice" placeholder="Min" onchange="performSearch()">
+                            <span>-</span>
+                            <input type="number" id="maxPrice" placeholder="Max" onchange="performSearch()">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="checkbox-label" style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="inStock" onchange="performSearch()"> In Stock Only
+                        </label>
+                    </div>
+                </aside>
+
+                <div class="results-container">
+                    <div id="loading" class="hidden">Loading results...</div>
+                    <div id="results" class="results-grid"></div>
+                </div>
+            </div>
         </main>
     </div>
 
     <script>
         async function performSearch() {
             const query = document.getElementById('searchInput').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const inStock = document.getElementById('inStock').checked;
+            
+            const sourceCheckboxes = document.querySelectorAll('input[name="source"]:checked');
+            const sources = Array.from(sourceCheckboxes).map(cb => cb.value).join(',');
+
             const resultsDiv = document.getElementById('results');
             const loadingDiv = document.getElementById('loading');
 
@@ -38,7 +86,14 @@
             loadingDiv.classList.remove('hidden');
 
             try {
-                const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+                let url = `/search?q=${encodeURIComponent(query)}`;
+                if (sortFilter) url += `&sort=${encodeURIComponent(sortFilter)}`;
+                if (sources) url += `&source=${encodeURIComponent(sources)}`;
+                if (minPrice) url += `&min_price=${encodeURIComponent(minPrice)}`;
+                if (maxPrice) url += `&max_price=${encodeURIComponent(maxPrice)}`;
+                if (inStock) url += `&in_stock=true`;
+
+                const res = await fetch(url);
                 const data = await res.json();
                 
                 loadingDiv.classList.add('hidden');
