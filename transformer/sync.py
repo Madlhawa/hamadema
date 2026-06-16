@@ -43,6 +43,16 @@ def run_sync():
         # Ensure sorting, filtering settings
         index.update_sortable_attributes(['price_numeric'])
         index.update_filterable_attributes(['source_site', 'price_numeric', 'stock_status'])
+        
+        # Override default ranking rules to prioritize custom sorts over text relevance
+        index.update_ranking_rules([
+            'sort',
+            'words',
+            'typo',
+            'proximity',
+            'attribute',
+            'exactness'
+        ])
     except Exception as e:
         print(f"Could not connect to Meilisearch: {e}")
         return
