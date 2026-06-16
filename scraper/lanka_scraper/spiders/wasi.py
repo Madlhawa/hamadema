@@ -16,7 +16,8 @@ class WasiSpider(scrapy.Spider):
         for url in self.start_urls:
             yield Request(
                 url=url,
-                callback=self.parse
+                callback=self.parse,
+                meta={"impersonate": "chrome120"}
             )
 
     def parse(self, response):
@@ -80,5 +81,6 @@ class WasiSpider(scrapy.Spider):
         if next_page:
             yield Request(
                 url=next_page,
-                callback=self.parse
+                callback=self.parse,
+                meta={"impersonate": "chrome120"}
             )
