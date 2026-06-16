@@ -21,17 +21,23 @@ with DAG(
     tags=['scraping'],
 ) as dag:
 
-    # Task 1: Run the Scrapy Spider
-    run_scraper = BashOperator(
-        task_id='run_scrapy_spider',
+    # Task 1: Run the Nanotek Scrapy Spider
+    run_nanotek = BashOperator(
+        task_id='run_nanotek_spider',
         bash_command='cd /opt/app/scraper && scrapy crawl nanotek',
     )
 
-    # Task 2: Run the Transformer script
+    # Task 2: Run the Wasi Scrapy Spider
+    run_wasi = BashOperator(
+        task_id='run_wasi_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl wasi',
+    )
+
+    # Task 3: Run the Transformer script
     run_transformer = BashOperator(
         task_id='run_data_transformer',
         bash_command='cd /opt/app/transformer && python sync.py',
     )
 
     # Define execution order
-    run_scraper >> run_transformer
+    [run_nanotek, run_wasi] >> run_transformer
