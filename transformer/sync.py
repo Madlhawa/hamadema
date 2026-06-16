@@ -44,13 +44,13 @@ def run_sync():
         index.update_sortable_attributes(['price_numeric'])
         index.update_filterable_attributes(['source_site', 'price_numeric', 'stock_status'])
         
-        # Override default ranking rules to prioritize custom sorts over text relevance
+        # Reset ranking rules to default Meilisearch rules
         index.update_ranking_rules([
-            'sort',
             'words',
             'typo',
             'proximity',
             'attribute',
+            'sort',
             'exactness'
         ])
     except Exception as e:
