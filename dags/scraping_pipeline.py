@@ -24,7 +24,7 @@ with DAG(
     # Task 1: Run the Scrapy Spider
     run_scraper = BashOperator(
         task_id='run_scrapy_spider',
-        bash_command='cd /opt/app/scraper && scrapy crawl base_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl nanotek',
     )
 
     # Task 2: Run the Transformer script
