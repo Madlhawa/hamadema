@@ -21,7 +21,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./scraper:/opt/app/scraper
     - ./transformer:/opt/app/transformer
-    - ./logs:/opt/airflow/logs
+    - airflow_logs:/opt/airflow/logs
   depends_on:
     postgres:
       condition: service_healthy
@@ -110,3 +110,4 @@ services:
 volumes:
   postgres_data:
   meilisearch_data:
+  airflow_logs:
