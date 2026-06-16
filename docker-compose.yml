@@ -1,5 +1,29 @@
 version: '3.8'
 
+x-airflow-common:
+  &airflow-common
+  build: ./airflow
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-scraper_user}:${POSTGRES_PASSWORD:-supersecret}@postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    # Project Specific Envs
+    POSTGRES_DB: ${POSTGRES_DB:-lanka_aggregator}
+    POSTGRES_USER: ${POSTGRES_USER:-scraper_user}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supersecret}
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: 5432
+    MEILI_HOST: http://meilisearch:7700
+    MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKeyToChange123}
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./scraper:/opt/app/scraper
+    - ./transformer:/opt/app/transformer
+  depends_on:
+    postgres:
+      condition: service_healthy
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -12,7 +36,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-scraper_user}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
 
   meilisearch:
     image: getmeili/meilisearch:v1.6
@@ -33,39 +63,47 @@ services:
       - "80:5000"
     environment:
       - MEILI_HOST=http://meilisearch:7700
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
+      - MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKeyToChange123}
     depends_on:
       - meilisearch
     restart: unless-stopped
 
-  scraper:
-    build: ./scraper
-    container_name: lanka_scraper
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    command: version
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-lanka_aggregator}
-      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecret}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-    depends_on:
-      - postgres
-    restart: unless-stopped
+      <<: *airflow-common-env
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
 
-  transformer:
-    build: ./transformer
-    container_name: data_transformer
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB:-lanka_aggregator}
-      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecret}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - MEILI_HOST=http://meilisearch:7700
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
     depends_on:
-      - postgres
-      - meilisearch
-    restart: unless-stopped
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    command: scheduler
+    restart: always
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:

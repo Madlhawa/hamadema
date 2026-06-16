@@ -41,6 +41,19 @@ else
     echo ".env file already exists. Skipping..."
 fi
 
+# 3.5. Setup Swap File (Crucial for Airflow on a 2GB VPS)
+echo "[3.5/4] Setting up 4GB Swap File (to prevent Airflow OOM crashes)..."
+if [ ! -f /swapfile ]; then
+    sudo fallocate -l 4G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+    echo "Swap file created successfully."
+else
+    echo "Swap file already exists. Skipping..."
+fi
+
 # 4. Start the Application
 echo "[4/4] Building and starting Docker containers..."
 # Clean up any old containers/volumes safely before rebuilding

@@ -1,0 +1,4 @@
+scrapy
+scrapy-impersonate
+psycopg2-binary
+meilisearch
