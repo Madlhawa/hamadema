@@ -3,10 +3,10 @@ BOT_NAME = "lanka_scraper"
 SPIDER_MODULES = ["lanka_scraper.spiders"]
 NEWSPIDER_MODULE = "lanka_scraper.spiders"
 
-# --- ANTI-BOT CONFIGURATION (scrapy-curl-cffi) ---
+# --- ANTI-BOT CONFIGURATION (scrapy-impersonate) ---
 DOWNLOAD_HANDLERS = {
-    "http": "scrapy_curl_cffi.handler.CurlCffiDownloadHandler",
-    "https": "scrapy_curl_cffi.handler.CurlCffiDownloadHandler",
+    "http": "scrapy_impersonate.ImpersonateDownloadHandler",
+    "https": "scrapy_impersonate.ImpersonateDownloadHandler",
 }
 
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"

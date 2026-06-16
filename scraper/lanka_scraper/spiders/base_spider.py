@@ -13,7 +13,7 @@ class BaseSpider(scrapy.Spider):
                 url=url, 
                 callback=self.parse,
                 meta={
-                    "curl_cffi_options": {"impersonate": "chrome110"}
+                    "impersonate": "chrome110"
                 }
             )
 
