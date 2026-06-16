@@ -129,7 +129,10 @@
                         <div class="card-content">
                             <h3>${item.title || 'Unknown Product'}</h3>
                             <p class="price">${item.price || 'Price N/A'}</p>
-                            <p class="source">Source: ${item.source_site}</p>
+                            <div class="tags">
+                                <span class="tag tag-source">${item.source_site.replace('.lk', '')}</span>
+                                <span class="tag ${item.stock_status === 'In Stock' ? 'tag-stock-in' : 'tag-stock-out'}">${item.stock_status || 'Unknown'}</span>
+                            </div>
                             ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
                         </div>
                     `;

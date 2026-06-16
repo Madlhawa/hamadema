@@ -181,11 +181,37 @@ button:active {
     margin: 0 0 0.5rem 0;
 }
 
-.source {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin: 0 0 1.5rem 0;
+.tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
     flex-grow: 1;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.tag-source {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+}
+
+.tag-stock-in {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.tag-stock-out {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
 }
 
 .btn {
