@@ -8,6 +8,7 @@ x-airflow-common:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-scraper_user}:${POSTGRES_PASSWORD:-supersecret}@postgres/airflow
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:-this_is_a_very_secure_secret_key_12345}
     # Project Specific Envs
     POSTGRES_DB: ${POSTGRES_DB:-lanka_aggregator}
     POSTGRES_USER: ${POSTGRES_USER:-scraper_user}
@@ -20,6 +21,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./scraper:/opt/app/scraper
     - ./transformer:/opt/app/transformer
+    - ./logs:/opt/airflow/logs
   depends_on:
     postgres:
       condition: service_healthy
