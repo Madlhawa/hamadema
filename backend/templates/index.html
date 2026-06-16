@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="landing-mode">
     <div class="container">
         <header>
             <h1>Hamadema</h1>
@@ -82,6 +82,10 @@
             resultsDiv.innerHTML = '';
             
             if (!query.trim()) return;
+
+            // Switch to results layout
+            document.body.classList.remove('landing-mode');
+            document.body.classList.add('results-mode');
 
             loadingDiv.classList.remove('hidden');
 
