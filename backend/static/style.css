@@ -107,11 +107,19 @@ button:active {
 .card {
     background-color: var(--card-bg);
     border-radius: 12px;
-    padding: 1.5rem;
+    padding: 0;
     border: 1px solid #334155;
     transition: transform 0.3s, box-shadow 0.3s;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.card-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .card:hover {
@@ -166,4 +174,32 @@ button:active {
     color: var(--text-muted);
     grid-column: 1 / -1;
     font-size: 1.2rem;
+}
+
+.card-img-wrapper {
+    height: 200px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #334155;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.card-img-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-wrapper img {
+    transform: scale(1.05);
+}
+
+.no-image {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 600;
 }

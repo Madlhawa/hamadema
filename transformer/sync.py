@@ -49,6 +49,7 @@ def run_sync():
             "title": payload.get("title", f"Unknown Title from {source}"),
             "price": payload.get("price", "N/A"),
             "url": payload.get("url", ""),
+            "image_url": payload.get("image_url", ""),
             "synced_at": datetime.utcnow().isoformat()
         }
         documents.append(doc)

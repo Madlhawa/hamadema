@@ -57,10 +57,15 @@
                     const card = document.createElement('div');
                     card.className = 'card';
                     card.innerHTML = `
-                        <h3>${item.title || 'Unknown Product'}</h3>
-                        <p class="price">${item.price || 'Price N/A'}</p>
-                        <p class="source">Source: ${item.source_site}</p>
-                        ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
+                        <div class="card-img-wrapper">
+                            ${item.image_url ? \`<img src="\${item.image_url}" alt="\${item.title || 'Product'}" loading="lazy">\` : \`<div class="no-image">No Image</div>\`}
+                        </div>
+                        <div class="card-content">
+                            <h3>${item.title || 'Unknown Product'}</h3>
+                            <p class="price">${item.price || 'Price N/A'}</p>
+                            <p class="source">Source: ${item.source_site}</p>
+                            ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
+                        </div>
                     `;
                     resultsDiv.appendChild(card);
                 });
