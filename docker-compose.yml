@@ -17,6 +17,7 @@ x-airflow-common:
     POSTGRES_PORT: 5432
     MEILI_HOST: http://meilisearch:7700
     MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKeyToChange123}
+    PROXY_LIST: ${PROXY_LIST:-}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./scraper:/opt/app/scraper

@@ -5,7 +5,10 @@ class NanotekSpider(scrapy.Spider):
     name = "nanotek"
     allowed_domains = ["nanotek.lk"]
     start_urls = [
-        "https://www.nanotek.lk/category/laptop"
+        "https://www.nanotek.lk/category/laptop",
+        "https://www.nanotek.lk/category/monitors-monitor-arms",
+        "https://www.nanotek.lk/category/speakers-headsets-ear-buds",
+        "https://www.nanotek.lk/category/keyboardmouse-gamepad-controller"
     ]
 
     def start_requests(self):

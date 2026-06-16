@@ -29,4 +29,6 @@ DB_SETTINGS = {
 }
 
 # Proxy settings
-# PROXY_URL = "http://username:password@proxyserver.com:8080"
+DOWNLOADER_MIDDLEWARES = {
+    'lanka_scraper.middlewares.RotatingProxyMiddleware': 100,
+}
