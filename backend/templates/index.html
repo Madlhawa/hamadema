@@ -289,6 +289,8 @@
         async function performSearch(page = 1, append = false) {
             if (isFetching) return;
             
+            document.getElementById('autocompleteDropdown').classList.add('hidden');
+            
             currentPage = page;
             const query = document.getElementById('searchInput').value;
             const sortFilter = document.getElementById('sortFilter').value;
