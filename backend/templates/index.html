@@ -106,7 +106,6 @@
         let compareList = [];
 
         function toggleCompare(event, id, title, price, brand, ram, storage, source) {
-            event.preventDefault();
             event.stopPropagation();
             
             const index = compareList.findIndex(item => item.id === id);
