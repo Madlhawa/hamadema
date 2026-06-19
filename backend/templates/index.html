@@ -59,6 +59,8 @@
                             <input type="checkbox" id="inStock" onchange="performSearch()"> In Stock Only
                         </label>
                     </div>
+
+                    <div id="dynamicFiltersContainer"></div>
                 </aside>
 
                 <div class="results-container">
@@ -84,6 +86,15 @@
             const sourceCheckboxes = document.querySelectorAll('input[name="source"]:checked');
             const sources = Array.from(sourceCheckboxes).map(cb => cb.value).join(',');
 
+            // Read active dynamic facets
+            const dynamicCheckboxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]:checked');
+            const activeFacets = {};
+            dynamicCheckboxes.forEach(cb => {
+                const facet = cb.getAttribute('data-facet');
+                if (!activeFacets[facet]) activeFacets[facet] = [];
+                activeFacets[facet].push(cb.value);
+            });
+
             const resultsDiv = document.getElementById('results');
             const loadingDiv = document.getElementById('loading');
             const paginationDiv = document.getElementById('pagination');
@@ -106,6 +117,10 @@
                 if (minPrice) url += `&min_price=${encodeURIComponent(minPrice)}`;
                 if (maxPrice) url += `&max_price=${encodeURIComponent(maxPrice)}`;
                 if (inStock) url += `&in_stock=true`;
+                
+                for (const [key, values] of Object.entries(activeFacets)) {
+                    url += `&${key}=${encodeURIComponent(values.join(','))}`;
+                }
 
                 const res = await fetch(url);
                 const data = await res.json();
@@ -116,6 +131,8 @@
                     resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
                     return;
                 }
+                
+                renderDynamicFacets(data.facetDistribution, activeFacets);
 
                 if (!data.hits || data.hits.length === 0) {
                     resultsDiv.innerHTML = '<p class="no-results">No products found.</p>';
@@ -166,6 +183,39 @@
                 resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
             }
         }
+        
+        function renderDynamicFacets(facetDist, activeFacets) {
+            const container = document.getElementById('dynamicFiltersContainer');
+            container.innerHTML = '';
+            if (!facetDist) return;
+
+            const orderedFacets = ['category', 'brand', 'ram', 'storage'];
+            const facetDisplayNames = {'category': 'Category', 'brand': 'Brand', 'ram': 'RAM', 'storage': 'Storage'};
+
+            orderedFacets.forEach(facetKey => {
+                const dist = facetDist[facetKey];
+                if (!dist || Object.keys(dist).length === 0) return;
+
+                const group = document.createElement('div');
+                group.className = 'filter-group';
+                group.innerHTML = `<label>${facetDisplayNames[facetKey]}</label>`;
+                
+                const list = document.createElement('div');
+                list.className = 'checkbox-list';
+
+                const sortedValues = Object.entries(dist).sort((a, b) => b[1] - a[1]);
+
+                sortedValues.forEach(([val, count]) => {
+                    const isChecked = activeFacets[facetKey] && activeFacets[facetKey].includes(val);
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="checkbox" data-facet="${facetKey}" value="${val}" ${isChecked ? 'checked' : ''} onchange="performSearch()"> ${val} (${count})`;
+                    list.appendChild(label);
+                });
+
+                group.appendChild(list);
+                container.appendChild(group);
+            });
+        }
 
         // Trigger search on Enter
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
@@ -174,11 +224,9 @@
             }
         });
         
-        // Ensure changing filters resets to page 1
-        document.querySelectorAll('select, input[type="checkbox"], input[type="number"]').forEach(el => {
-            if(el.id !== 'searchInput') {
-                el.addEventListener('change', () => performSearch(1));
-            }
+        // Ensure changing static filters resets to page 1
+        document.querySelectorAll('aside select, aside input[type="checkbox"], aside input[type="number"]').forEach(el => {
+            el.addEventListener('change', () => performSearch(1));
         });
     </script>
 </body>

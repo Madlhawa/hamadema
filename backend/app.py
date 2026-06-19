@@ -30,13 +30,20 @@ def search():
     limit = 24
     offset = (page - 1) * limit
     
+    # Dynamic facets
+    category_param = request.args.get('category', '')
+    brand_param = request.args.get('brand', '')
+    ram_param = request.args.get('ram', '')
+    storage_param = request.args.get('storage', '')
+    
     if not meili_client:
         return jsonify({"error": "Search engine not available"}), 500
         
     try:
         search_params = {
             'limit': limit,
-            'offset': offset
+            'offset': offset,
+            'facets': ['category', 'brand', 'ram', 'storage']
         }
         
         filter_conditions = []
@@ -44,6 +51,18 @@ def search():
             sources_filter = " OR ".join([f"source_site = '{s.strip()}'" for s in source_param.split(',') if s.strip()])
             if sources_filter:
                 filter_conditions.append(f"({sources_filter})")
+                
+        # Helper to apply facet filters
+        def add_facet_filter(field, param_val):
+            if param_val:
+                f_filter = " OR ".join([f"{field} = '{v.strip()}'" for v in param_val.split(',') if v.strip()])
+                if f_filter:
+                    filter_conditions.append(f"({f_filter})")
+                    
+        add_facet_filter('category', category_param)
+        add_facet_filter('brand', brand_param)
+        add_facet_filter('ram', ram_param)
+        add_facet_filter('storage', storage_param)
             
         if min_price and min_price.isdigit():
             filter_conditions.append(f"price_numeric >= {min_price}")
@@ -66,7 +85,8 @@ def search():
             'hits': results['hits'],
             'totalHits': results.get('estimatedTotalHits', 0),
             'page': page,
-            'limit': limit
+            'limit': limit,
+            'facetDistribution': results.get('facetDistribution', {})
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
