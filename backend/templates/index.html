@@ -83,6 +83,9 @@
                 </aside>
 
                 <div class="results-container">
+                    <p id="priceDisclaimer" style="display:none; color: var(--text-muted); font-size: 0.85rem; background: #f1f5f9; padding: 0.8rem; border-radius: 6px; margin-top: 0; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">
+                        <strong>Disclaimer:</strong> Prices and availability are fetched from public listings and are subject to change. Always verify the final price on the seller's website.
+                    </p>
                     <div id="results" class="results-grid"></div>
                     <div id="scrollAnchor" style="height: 20px; width: 100%;"></div>
                 </div>
@@ -341,6 +344,8 @@
                 
                 removeSkeletons();
                 isFetching = false;
+                
+                document.getElementById('priceDisclaimer').style.display = 'block';
 
                 if (data.error) {
                     if (!append) resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
@@ -404,9 +409,11 @@
                         <div class="card-content">
                             <h3>
                                 ${item.title || 'Unknown Product'}
+                                <svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px; vertical-align: middle; color: #94a3b8;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                 <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
                             </h3>
                             <p class="price">${item.price || 'Price N/A'}</p>
+                            <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}" class="report-link" onclick="event.stopPropagation();" style="display: inline-block; font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; text-decoration: underline;">Report Listing</a>
                         </div>
                     `;
                     resultsDiv.appendChild(card);
@@ -424,8 +431,8 @@
             container.innerHTML = '';
             if (!facetDist) return;
 
-            const orderedFacets = ['category', 'brand', 'ram', 'storage'];
-            const facetDisplayNames = {'category': 'Category', 'brand': 'Brand', 'ram': 'RAM', 'storage': 'Storage'};
+            const orderedFacets = ['source_site', 'category', 'brand', 'ram', 'storage'];
+            const facetDisplayNames = {'source_site': 'Store', 'category': 'Category', 'brand': 'Brand', 'ram': 'RAM', 'storage': 'Storage'};
 
             orderedFacets.forEach(facetKey => {
                 const dist = facetDist[facetKey];
