@@ -43,7 +43,7 @@ def search():
         search_params = {
             'limit': limit,
             'offset': offset,
-            'facets': ['category', 'brand', 'ram', 'storage']
+            'facets': ['category', 'brand', 'ram', 'storage', 'price_numeric']
         }
         
         filter_conditions = []
@@ -86,7 +86,8 @@ def search():
             'totalHits': results.get('estimatedTotalHits', 0),
             'page': page,
             'limit': limit,
-            'facetDistribution': results.get('facetDistribution', {})
+            'facetDistribution': results.get('facetDistribution', {}),
+            'facetStats': results.get('facetStats', {})
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

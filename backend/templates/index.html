@@ -61,9 +61,9 @@
                             <input type="range" min="0" max="2000000" value="2000000" id="sliderMax" oninput="syncInputsFromSlider()" onchange="performSearch()">
                         </div>
                         <div class="price-inputs">
-                            <input type="number" id="minPrice" placeholder="Min" onchange="syncSlidersFromInput(); performSearch()">
+                            <input type="text" id="minPrice" placeholder="Min" onchange="syncSlidersFromInput(); performSearch()" onfocus="unformatInput(this)" onblur="formatInput(this)">
                             <span>-</span>
-                            <input type="number" id="maxPrice" placeholder="Max" onchange="syncSlidersFromInput(); performSearch()">
+                            <input type="text" id="maxPrice" placeholder="Max" onchange="syncSlidersFromInput(); performSearch()" onfocus="unformatInput(this)" onblur="formatInput(this)">
                         </div>
                     </div>
 
@@ -111,6 +111,20 @@
         let autocompleteTimeout = null;
         let compareList = [];
 
+        let sliderAbsMin = 0;
+        let sliderAbsMax = 2000000;
+
+        function unformatInput(input) {
+            input.value = input.value.replace(/,/g, '');
+        }
+
+        function formatInput(input) {
+            if (input.value) {
+                let num = parseInt(input.value.replace(/,/g, '')) || 0;
+                input.value = num.toLocaleString('en-US');
+            }
+        }
+
         function syncInputsFromSlider() {
             let min = parseInt(document.getElementById('sliderMin').value);
             let max = parseInt(document.getElementById('sliderMax').value);
@@ -121,17 +135,23 @@
                 max = tmp;
             }
             
-            document.getElementById('minPrice').value = min;
-            document.getElementById('maxPrice').value = max;
+            document.getElementById('minPrice').value = min.toLocaleString('en-US');
+            document.getElementById('maxPrice').value = max.toLocaleString('en-US');
             updateSliderFill(min, max);
         }
 
         function syncSlidersFromInput() {
-            let min = parseInt(document.getElementById('minPrice').value) || 0;
-            let max = parseInt(document.getElementById('maxPrice').value) || 2000000;
+            let minVal = document.getElementById('minPrice').value.replace(/,/g, '');
+            let maxVal = document.getElementById('maxPrice').value.replace(/,/g, '');
             
-            if (min < 0) min = 0;
-            if (max > 2000000) max = 2000000;
+            let min = parseInt(minVal);
+            if (isNaN(min)) min = sliderAbsMin;
+            
+            let max = parseInt(maxVal);
+            if (isNaN(max)) max = sliderAbsMax;
+            
+            if (min < sliderAbsMin) min = sliderAbsMin;
+            if (max > sliderAbsMax) max = sliderAbsMax;
             if (min > max) {
                 let tmp = min;
                 min = max;
@@ -144,15 +164,43 @@
         }
 
         function updateSliderFill(min, max) {
-            const minPercent = (min / 2000000) * 100;
-            const maxPercent = (max / 2000000) * 100;
+            const range = sliderAbsMax - sliderAbsMin || 1;
+            const minPercent = ((min - sliderAbsMin) / range) * 100;
+            const maxPercent = ((max - sliderAbsMin) / range) * 100;
             const fill = document.getElementById('sliderFill');
             fill.style.left = minPercent + '%';
             fill.style.right = (100 - maxPercent) + '%';
         }
 
+        function updateSliderBounds(newMin, newMax) {
+            if (newMin === newMax) {
+                newMin = 0; // Prevent 0 division if min==max
+            }
+            sliderAbsMin = newMin;
+            sliderAbsMax = newMax;
+            
+            document.getElementById('sliderMin').min = newMin;
+            document.getElementById('sliderMin').max = newMax;
+            document.getElementById('sliderMax').min = newMin;
+            document.getElementById('sliderMax').max = newMax;
+            
+            let minInput = document.getElementById('minPrice').value.replace(/,/g, '');
+            let maxInput = document.getElementById('maxPrice').value.replace(/,/g, '');
+            
+            let currMin = parseInt(minInput);
+            if (isNaN(currMin) || currMin < sliderAbsMin) currMin = sliderAbsMin;
+            
+            let currMax = parseInt(maxInput);
+            if (isNaN(currMax) || currMax > sliderAbsMax) currMax = sliderAbsMax;
+            
+            document.getElementById('sliderMin').value = currMin;
+            document.getElementById('sliderMax').value = currMax;
+            
+            updateSliderFill(currMin, currMax);
+        }
+
         // Initialize slider fill
-        updateSliderFill(0, 2000000);
+        updateSliderBounds(0, 2000000);
 
         function toggleCompare(event, id, title, price, brand, ram, storage, source) {
             event.stopPropagation();
@@ -295,9 +343,19 @@
                     return;
                 }
                 
-                // Only update facets on the first page load to avoid filter jumping
+                // Only update facets and slider bounds on the first page load to avoid filter jumping
                 if (!append) {
                     renderDynamicFacets(data.facetDistribution, activeFacets);
+                    
+                    if (data.facetStats && data.facetStats.price_numeric && !minPrice && !maxPrice) {
+                        const stats = data.facetStats.price_numeric;
+                        let newMin = Math.floor(stats.min);
+                        let newMax = Math.ceil(stats.max);
+                        updateSliderBounds(newMin, newMax);
+                        
+                        document.getElementById('minPrice').placeholder = newMin.toLocaleString('en-US');
+                        document.getElementById('maxPrice').placeholder = newMax.toLocaleString('en-US');
+                    }
                 }
 
                 totalPagesCount = Math.ceil(data.totalHits / data.limit) || 1;
