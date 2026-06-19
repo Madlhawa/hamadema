@@ -292,8 +292,8 @@
             currentPage = page;
             const query = document.getElementById('searchInput').value;
             const sortFilter = document.getElementById('sortFilter').value;
-            const minPrice = document.getElementById('minPrice').value;
-            const maxPrice = document.getElementById('maxPrice').value;
+            const minPrice = document.getElementById('minPrice').value.replace(/,/g, '');
+            const maxPrice = document.getElementById('maxPrice').value.replace(/,/g, '');
             const inStock = document.getElementById('inStock').checked;
             
             const sourceCheckboxes = document.querySelectorAll('input[name="source"]:checked');
