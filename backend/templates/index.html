@@ -22,6 +22,12 @@
             </div>
         </header>
 
+        <button id="mobileFilterBtn" class="mobile-filter-btn" onclick="toggleMobileFilters()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            Filters
+        </button>
+        <div id="drawerOverlay" class="drawer-overlay" onclick="toggleMobileFilters()"></div>
+
         <main>
             <div class="layout-grid">
                 <aside class="sidebar">
@@ -64,18 +70,128 @@
                 </aside>
 
                 <div class="results-container">
-                    <div id="loading" class="hidden">Loading results...</div>
                     <div id="results" class="results-grid"></div>
-                    <div id="pagination" class="pagination"></div>
+                    <div id="scrollAnchor" style="height: 20px; width: 100%;"></div>
                 </div>
             </div>
         </main>
     </div>
 
+        <div id="compareFooter" class="compare-footer"></div>
+
+        <div id="compareModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Product Comparison</h2>
+                    <button class="close-btn" onclick="closeCompareModal()">&times;</button>
+                </div>
+                <div id="compareTableContainer" class="modal-body"></div>
+            </div>
+        </div>
+
     <script>
         let currentPage = 1;
+        let totalPagesCount = 1;
+        let isFetching = false;
 
-        async function performSearch(page = 1) {
+        const resultsDiv = document.getElementById('results');
+        const scrollAnchor = document.getElementById('scrollAnchor');
+
+        function toggleMobileFilters() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.getElementById('drawerOverlay').classList.toggle('show');
+        }
+
+        let compareList = [];
+
+        function toggleCompare(event, id, title, price, brand, ram, storage, source) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const index = compareList.findIndex(item => item.id === id);
+            if (index > -1) {
+                compareList.splice(index, 1);
+            } else {
+                if (compareList.length >= 3) {
+                    alert("You can compare up to 3 items at a time.");
+                    event.target.checked = false;
+                    return;
+                }
+                compareList.push({ id, title, price, brand, ram, storage, source });
+            }
+            renderCompareFooter();
+        }
+
+        function renderCompareFooter() {
+            const footer = document.getElementById('compareFooter');
+            if (compareList.length > 0) {
+                footer.classList.add('show');
+                footer.innerHTML = `<button class="compare-btn" onclick="openCompareModal()">Compare ${compareList.length} Items</button>`;
+            } else {
+                footer.classList.remove('show');
+            }
+        }
+
+        function openCompareModal() {
+            const modal = document.getElementById('compareModal');
+            const tableContainer = document.getElementById('compareTableContainer');
+            
+            let html = '<table class="compare-table"><tr><th>Feature</th>';
+            compareList.forEach(item => html += `<th>${item.source.replace('.lk', '')}</th>`);
+            html += '</tr>';
+
+            const fields = [
+                { key: 'title', label: 'Product' },
+                { key: 'price', label: 'Price' },
+                { key: 'brand', label: 'Brand' },
+                { key: 'ram', label: 'RAM' },
+                { key: 'storage', label: 'Storage' }
+            ];
+
+            fields.forEach(field => {
+                html += `<tr><td><strong>${field.label}</strong></td>`;
+                compareList.forEach(item => {
+                    html += `<td>${item[field.key] || '-'}</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += '</table>';
+            tableContainer.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compareModal').style.display = 'none';
+        }
+
+        function showSkeletons(append) {
+            let skeletonsHtml = '';
+            for(let i=0; i<8; i++) {
+                skeletonsHtml += `
+                    <div class="card skeleton-card">
+                        <div class="card-img-wrapper skeleton-img"></div>
+                        <div class="card-content">
+                            <div class="skeleton-text skeleton-title"></div>
+                            <div class="skeleton-text skeleton-price"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            if (append) {
+                resultsDiv.insertAdjacentHTML('beforeend', skeletonsHtml);
+            } else {
+                resultsDiv.innerHTML = skeletonsHtml;
+            }
+        }
+
+        function removeSkeletons() {
+            document.querySelectorAll('.skeleton-card').forEach(e => e.remove());
+        }
+
+        async function performSearch(page = 1, append = false) {
+            if (isFetching) return;
+            
             currentPage = page;
             const query = document.getElementById('searchInput').value;
             const sortFilter = document.getElementById('sortFilter').value;
@@ -86,7 +202,6 @@
             const sourceCheckboxes = document.querySelectorAll('input[name="source"]:checked');
             const sources = Array.from(sourceCheckboxes).map(cb => cb.value).join(',');
 
-            // Read active dynamic facets
             const dynamicCheckboxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]:checked');
             const activeFacets = {};
             dynamicCheckboxes.forEach(cb => {
@@ -95,20 +210,18 @@
                 activeFacets[facet].push(cb.value);
             });
 
-            const resultsDiv = document.getElementById('results');
-            const loadingDiv = document.getElementById('loading');
-            const paginationDiv = document.getElementById('pagination');
-
-            resultsDiv.innerHTML = '';
-            paginationDiv.innerHTML = '';
+            if (!append) {
+                resultsDiv.innerHTML = '';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
             
             if (!query.trim()) return;
 
-            // Switch to results layout
             document.body.classList.remove('landing-mode');
             document.body.classList.add('results-mode');
 
-            loadingDiv.classList.remove('hidden');
+            isFetching = true;
+            showSkeletons(append);
 
             try {
                 let url = `/search?q=${encodeURIComponent(query)}&page=${currentPage}`;
@@ -125,17 +238,35 @@
                 const res = await fetch(url);
                 const data = await res.json();
                 
-                loadingDiv.classList.add('hidden');
+                removeSkeletons();
+                isFetching = false;
 
                 if (data.error) {
-                    resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                    if (!append) resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
                     return;
                 }
                 
-                renderDynamicFacets(data.facetDistribution, activeFacets);
+                // Only update facets on the first page load to avoid filter jumping
+                if (!append) {
+                    renderDynamicFacets(data.facetDistribution, activeFacets);
+                }
+
+                totalPagesCount = Math.ceil(data.totalHits / data.limit) || 1;
 
                 if (!data.hits || data.hits.length === 0) {
-                    resultsDiv.innerHTML = '<p class="no-results">No products found.</p>';
+                    if (!append) {
+                        resultsDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h2>No exact matches found.</h2>
+                                <p>Try adjusting your filters or explore popular categories:</p>
+                                <div class="empty-suggestions">
+                                    <button class="suggestion-btn" onclick="document.getElementById('searchInput').value='Laptop'; performSearch(1)">💻 Laptops</button>
+                                    <button class="suggestion-btn" onclick="document.getElementById('searchInput').value='Monitor'; performSearch(1)">🖥️ Monitors</button>
+                                    <button class="suggestion-btn" onclick="document.getElementById('searchInput').value='VGA'; performSearch(1)">🎮 Graphics Cards</button>
+                                </div>
+                            </div>
+                        `;
+                    }
                     return;
                 }
 
@@ -148,10 +279,16 @@
                     card.className = 'card';
                     card.style.textDecoration = 'none';
                     card.style.color = 'inherit';
+                    
+                    const isChecked = compareList.some(c => c.id === item.id) ? 'checked' : '';
+                    
                     card.innerHTML = `
+                        <label class="compare-checkbox" onclick="event.stopPropagation();">
+                            <input type="checkbox" ${isChecked} onclick="toggleCompare(event, '${item.id}', '${(item.title || '').replace(/'/g, "\\'")}', '${item.price}', '${item.brand || ''}', '${item.ram || ''}', '${item.storage || ''}', '${item.source_site}')"> Compare
+                        </label>
                         <div class="card-img-wrapper">
                             <span class="badge ${item.stock_status === 'In Stock' ? 'badge-in-stock' : 'badge-out-of-stock'}">${item.stock_status || 'Unknown'}</span>
-                            ${item.image_url ? `<img src="${item.image_url}" alt="${item.title || 'Product'}" loading="lazy">` : `<div class="no-image">No Image</div>`}
+                            ${item.image_url ? `<img src="${item.image_url}" alt="${(item.title || '').replace(/"/g, '&quot;')}" loading="lazy">` : `<div class="no-image">No Image</div>`}
                         </div>
                         <div class="card-content">
                             <h3>
@@ -164,23 +301,10 @@
                     resultsDiv.appendChild(card);
                 });
 
-                // Render Pagination
-                const totalPages = Math.ceil(data.totalHits / data.limit);
-                if (totalPages > 1) {
-                    paginationDiv.innerHTML = `
-                        <button onclick="performSearch(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
-                        <span class="page-info">Page ${currentPage} of ${totalPages}</span>
-                        <button onclick="performSearch(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
-                    `;
-                }
-                
-                if (currentPage > 1) {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-
             } catch (err) {
-                loadingDiv.classList.add('hidden');
-                resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
+                removeSkeletons();
+                isFetching = false;
+                if (!append) resultsDiv.innerHTML = `<p class="error">An error occurred while fetching results.</p>`;
             }
         }
         
@@ -208,7 +332,7 @@
                 sortedValues.forEach(([val, count]) => {
                     const isChecked = activeFacets[facetKey] && activeFacets[facetKey].includes(val);
                     const label = document.createElement('label');
-                    label.innerHTML = `<input type="checkbox" data-facet="${facetKey}" value="${val}" ${isChecked ? 'checked' : ''} onchange="performSearch()"> ${val} (${count})`;
+                    label.innerHTML = `<input type="checkbox" data-facet="${facetKey}" value="${val}" ${isChecked ? 'checked' : ''} onchange="performSearch(1)"> ${val} (${count})`;
                     list.appendChild(label);
                 });
 
@@ -217,11 +341,21 @@
             });
         }
 
-        // Trigger search on Enter
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch(1);
+        // Infinite Scroll Observer
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !isFetching && currentPage < totalPagesCount) {
+                performSearch(currentPage + 1, true);
             }
+        }, { rootMargin: "100px" });
+        observer.observe(document.getElementById('scrollAnchor'));
+
+        // Debounced Search on Input
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(1);
+            }, 300);
         });
         
         // Ensure changing static filters resets to page 1
