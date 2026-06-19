@@ -54,10 +54,16 @@
 
                     <div class="filter-group">
                         <label>Price Range (LKR)</label>
+                        <div class="price-slider-container">
+                            <div class="slider-track"></div>
+                            <div class="slider-fill" id="sliderFill"></div>
+                            <input type="range" min="0" max="2000000" value="0" id="sliderMin" oninput="syncInputsFromSlider()" onchange="performSearch()">
+                            <input type="range" min="0" max="2000000" value="2000000" id="sliderMax" oninput="syncInputsFromSlider()" onchange="performSearch()">
+                        </div>
                         <div class="price-inputs">
-                            <input type="number" id="minPrice" placeholder="Min" onchange="performSearch()">
+                            <input type="number" id="minPrice" placeholder="Min" onchange="syncSlidersFromInput(); performSearch()">
                             <span>-</span>
-                            <input type="number" id="maxPrice" placeholder="Max" onchange="performSearch()">
+                            <input type="number" id="maxPrice" placeholder="Max" onchange="syncSlidersFromInput(); performSearch()">
                         </div>
                     </div>
 
@@ -102,8 +108,51 @@
             document.querySelector('.sidebar').classList.toggle('open');
             document.getElementById('drawerOverlay').classList.toggle('show');
         }
-
+        let autocompleteTimeout = null;
         let compareList = [];
+
+        function syncInputsFromSlider() {
+            let min = parseInt(document.getElementById('sliderMin').value);
+            let max = parseInt(document.getElementById('sliderMax').value);
+            
+            if (min > max) {
+                let tmp = min;
+                min = max;
+                max = tmp;
+            }
+            
+            document.getElementById('minPrice').value = min;
+            document.getElementById('maxPrice').value = max;
+            updateSliderFill(min, max);
+        }
+
+        function syncSlidersFromInput() {
+            let min = parseInt(document.getElementById('minPrice').value) || 0;
+            let max = parseInt(document.getElementById('maxPrice').value) || 2000000;
+            
+            if (min < 0) min = 0;
+            if (max > 2000000) max = 2000000;
+            if (min > max) {
+                let tmp = min;
+                min = max;
+                max = tmp;
+            }
+
+            document.getElementById('sliderMin').value = min;
+            document.getElementById('sliderMax').value = max;
+            updateSliderFill(min, max);
+        }
+
+        function updateSliderFill(min, max) {
+            const minPercent = (min / 2000000) * 100;
+            const maxPercent = (max / 2000000) * 100;
+            const fill = document.getElementById('sliderFill');
+            fill.style.left = minPercent + '%';
+            fill.style.right = (100 - maxPercent) + '%';
+        }
+
+        // Initialize slider fill
+        updateSliderFill(0, 2000000);
 
         function toggleCompare(event, id, title, price, brand, ram, storage, source) {
             event.stopPropagation();
