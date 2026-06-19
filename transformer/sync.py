@@ -124,7 +124,7 @@ def run_sync():
     # Wipe old index to remove legacy integer-based IDs and duplicates
     index.delete_all_documents()
 
-    documents = []
+    documents = {}
     for row in rows:
         item_id, source, payload = row
         
@@ -149,11 +149,12 @@ def run_sync():
             "synced_at": datetime.utcnow().isoformat(),
             **facets
         }
-        documents.append(doc)
+        documents[doc_id] = doc
 
-    if documents:
-        print(f"Pushing {len(documents)} documents to Meilisearch...")
-        task = index.add_documents(documents)
+    docs_list = list(documents.values())
+    if docs_list:
+        print(f"Pushing {len(docs_list)} documents to Meilisearch...")
+        task = index.add_documents(docs_list)
         print(f"Task info: {task}")
     else:
         print("No documents to push.")
