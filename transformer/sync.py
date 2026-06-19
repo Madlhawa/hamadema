@@ -116,8 +116,13 @@ def run_sync():
         print(f"Could not connect to Postgres: {e}")
         return
 
+    import hashlib
+
     cursor.execute("SELECT id, source_site, raw_payload FROM raw_items;")
     rows = cursor.fetchall()
+    
+    # Wipe old index to remove legacy integer-based IDs and duplicates
+    index.delete_all_documents()
 
     documents = []
     for row in rows:
@@ -129,8 +134,11 @@ def run_sync():
         
         facets = extract_facets(title)
         
+        url = payload.get("url", "")
+        doc_id = hashlib.md5(url.encode('utf-8')).hexdigest() if url else str(item_id)
+        
         doc = {
-            "id": str(item_id),
+            "id": doc_id,
             "source_site": source,
             "title": title,
             "price": formatted_price,

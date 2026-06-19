@@ -37,11 +37,29 @@ class PostgresRawPipeline:
         """
         self.cursor.execute(create_table_query)
         self.connection.commit()
+        
+        # Deduplicate existing rows before creating index
+        dedup_query = """
+        DELETE FROM raw_items
+        WHERE id NOT IN (
+            SELECT MIN(id)
+            FROM raw_items
+            GROUP BY raw_payload->>'url'
+        );
+        """
+        self.cursor.execute(dedup_query)
+        self.connection.commit()
+
+        index_query = "CREATE UNIQUE INDEX IF NOT EXISTS raw_items_url_idx ON raw_items ((raw_payload->>'url'));"
+        self.cursor.execute(index_query)
+        self.connection.commit()
 
     def process_item(self, item, spider):
         insert_query = """
         INSERT INTO raw_items (source_site, scraped_at, raw_payload)
-        VALUES (%s, %s, %s);
+        VALUES (%s, %s, %s)
+        ON CONFLICT ((raw_payload->>'url'))
+        DO UPDATE SET scraped_at = EXCLUDED.scraped_at, raw_payload = EXCLUDED.raw_payload;
         """
         source_site = item.get("source_site", "unknown")
         raw_payload = item.get("raw_payload", {})
