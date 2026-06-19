@@ -89,9 +89,9 @@ header p {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -239,8 +239,8 @@ button:active {
 
 .results-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
 }
 
 .card {
@@ -409,7 +409,7 @@ button:active {
 .layout-grid {
     display: grid;
     grid-template-columns: 250px 1fr;
-    gap: 2rem;
+    gap: 1.25rem;
     align-items: start;
 }
 
