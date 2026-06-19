@@ -16,7 +16,7 @@
                 <span>Contact: hello@hamadema.lk</span>
             </div>
             <div class="top-bar-right">
-                <a href="#">Partner Stores</a>
+                <a href="#">About Us</a>
                 <a href="#">Categories</a>
                 <a href="#">Sign In</a>
             </div>
@@ -57,14 +57,6 @@
                         </select>
                     </div>
 
-                    <div class="filter-group">
-                        <label>Store</label>
-                        <div class="checkbox-list">
-                            <label><input type="checkbox" name="source" value="nanotek.lk" onchange="performSearch()"> Nanotek</label>
-                            <label><input type="checkbox" name="source" value="bigdeals.lk" onchange="performSearch()"> BigDeals.lk</label>
-                            <!-- You can add more stores dynamically or statically here -->
-                        </div>
-                    </div>
 
                     <div class="filter-group">
                         <label>Price Range (LKR)</label>
@@ -248,7 +240,7 @@
             const tableContainer = document.getElementById('compareTableContainer');
             
             let html = '<table class="compare-table"><tr><th>Feature</th>';
-            compareList.forEach(item => html += `<th>${item.source.replace('.lk', '')}</th>`);
+            compareList.forEach((item, i) => html += `<th>Item ${i + 1}</th>`);
             html += '</tr>';
 
             const fields = [
@@ -311,9 +303,6 @@
             const minPrice = document.getElementById('minPrice').value.replace(/,/g, '');
             const maxPrice = document.getElementById('maxPrice').value.replace(/,/g, '');
             const inStock = document.getElementById('inStock').checked;
-            
-            const sourceCheckboxes = document.querySelectorAll('input[name="source"]:checked');
-            const sources = Array.from(sourceCheckboxes).map(cb => cb.value).join(',');
 
             const dynamicCheckboxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]:checked');
             const activeFacets = {};
@@ -339,7 +328,6 @@
             try {
                 let url = `/search?q=${encodeURIComponent(query)}&page=${currentPage}`;
                 if (sortFilter) url += `&sort=${encodeURIComponent(sortFilter)}`;
-                if (sources) url += `&source=${encodeURIComponent(sources)}`;
                 if (minPrice) url += `&min_price=${encodeURIComponent(minPrice)}`;
                 if (maxPrice) url += `&max_price=${encodeURIComponent(maxPrice)}`;
                 if (inStock) url += `&in_stock=true`;
@@ -416,7 +404,6 @@
                         <div class="card-content">
                             <h3>
                                 ${item.title || 'Unknown Product'}
-                                <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
                             </h3>
                             <p class="price">${item.price || 'Price N/A'}</p>
                         </div>
@@ -607,12 +594,12 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Partner Network</h4>
+                <h4>Our Network</h4>
                 <ul>
-                    <li><a href="#">Nanotek Computer Solutions</a></li>
-                    <li><a href="#">BigDeals.lk</a></li>
+                    <li><a href="#">About Our Search Engine</a></li>
+                    <li><a href="#">How We Find Products</a></li>
                     <li><a href="#">Add Your Store</a></li>
-                    <li><a href="#">Data Scraping Policy</a></li>
+                    <li><a href="#">Search Indexing Policy</a></li>
                     <li><a href="#">Contact Us</a></li>
                 </ul>
             </div>
