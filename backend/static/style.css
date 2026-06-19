@@ -9,6 +9,10 @@
     --accent: #f97316;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
@@ -410,6 +414,9 @@ button:active {
 }
 
 @media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
     .layout-grid {
         grid-template-columns: 1fr;
     }
