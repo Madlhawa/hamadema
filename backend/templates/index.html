@@ -8,7 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body class="landing-mode">
-    <div class="container">
+    <div class="top-bar">
+        <div class="top-bar-container">
+            <div class="top-bar-left">
+                <span>Free shipping on orders over Rs. 50,000</span>
+                <span class="top-bar-divider">|</span>
+                <span>Support: +94 11 234 5678</span>
+            </div>
+            <div class="top-bar-right">
+                <a href="#">Track Order</a>
+                <a href="#">Wishlist</a>
+                <a href="#">Sign In</a>
+            </div>
+        </div>
+    </div>
+    <div class="container main-content">
         <header class="header-container">
             <a href="/" class="logo" style="text-decoration: none;">
                 <h1>Hamadema</h1>
@@ -571,5 +585,49 @@
             el.addEventListener('change', () => performSearch(1));
         });
     </script>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3>Hamadema</h3>
+                <p>Sri Lanka's premier search engine for tech, gadgets, and everyday electronics. Find everything you need across multiple stores instantly.</p>
+                <div class="social-icons">
+                    <a href="#">FB</a>
+                    <a href="#">TW</a>
+                    <a href="#">IG</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Shop Categories</h4>
+                <ul>
+                    <li><a href="#">Laptops & Computers</a></li>
+                    <li><a href="#">Mobile Phones</a></li>
+                    <li><a href="#">PC Components</a></li>
+                    <li><a href="#">Gaming Gear</a></li>
+                    <li><a href="#">Accessories</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Customer Service</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Track Your Order</a></li>
+                    <li><a href="#">Returns & Refunds</a></li>
+                    <li><a href="#">Shipping Information</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Stay in the Loop</h4>
+                <p>Subscribe to our newsletter for the latest tech deals and exclusive offers.</p>
+                <div class="newsletter-box">
+                    <input type="email" placeholder="Enter your email">
+                    <button>Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Hamadema. All Rights Reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </footer>
 </body>
 </html>
