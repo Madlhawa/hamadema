@@ -9,17 +9,20 @@
 </head>
 <body class="landing-mode">
     <div class="container">
-        <header>
-            <h1>Hamadema</h1>
-            <p>Everything you need. Search products across multiple Sri Lankan sites instantly.</p>
+        <header class="header-container">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <h1>Hamadema</h1>
+                <p>Everything you need. Search products across multiple Sri Lankan sites instantly.</p>
+            </a>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for products (e.g. laptop, phone)..." autofocus>
+                <button onclick="performSearch()" title="Search" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </div>
         </header>
 
         <main>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search for products (e.g. laptop, phone)..." autofocus>
-                <button onclick="performSearch()">Search</button>
-            </div>
-
             <div class="layout-grid">
                 <aside class="sidebar">
                     <h3 class="sidebar-title">Filters</h3>
@@ -120,8 +123,14 @@
                 }
 
                 data.hits.forEach(item => {
-                    const card = document.createElement('div');
+                    const card = document.createElement('a');
+                    if (item.url) {
+                        card.href = item.url;
+                        card.target = '_blank';
+                    }
                     card.className = 'card';
+                    card.style.textDecoration = 'none';
+                    card.style.color = 'inherit';
                     card.innerHTML = `
                         <div class="card-img-wrapper">
                             <span class="badge ${item.stock_status === 'In Stock' ? 'badge-in-stock' : 'badge-out-of-stock'}">${item.stock_status || 'Unknown'}</span>
@@ -133,7 +142,6 @@
                                 <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
                             </h3>
                             <p class="price">${item.price || 'Price N/A'}</p>
-                            ${item.url ? `<a href="${item.url}" target="_blank" class="btn">View Deal</a>` : ''}
                         </div>
                     `;
                     resultsDiv.appendChild(card);
