@@ -118,7 +118,7 @@ header p {
     padding: 0.5rem;
     font-size: 1rem;
     font-family: inherit;
-    text-align: left;
+    text-align: left !important;
 }
 
 .search-box button {
