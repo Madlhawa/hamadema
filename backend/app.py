@@ -17,6 +17,18 @@ except Exception as e:
 def index():
     return render_template('index.html')
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/how-it-works')
+def how_it_works():
+    return render_template('how-it-works.html')
+
+@app.route('/indexing-policy')
+def indexing_policy():
+    return render_template('indexing-policy.html')
+
 @app.route('/search', methods=['GET'])
 def search():
     query = request.args.get('q', '')

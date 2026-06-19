@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Our Search Engine | Hamadema</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .page-content { max-width: 800px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h1 { font-size: 2.5rem; margin-bottom: 1.5rem; color: var(--text-main); }
+        p { font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body class="results-mode">
+    <div class="top-bar">
+        <div class="top-bar-container">
+            <div class="top-bar-left">
+                <span>Searching 15,000+ products across top Sri Lankan tech stores</span>
+            </div>
+            <div class="top-bar-right">
+                <a href="/">Back to Search</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container main-content">
+        <header class="header-container" style="margin-top: 2rem;">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <h1 style="font-size: 2rem; margin-bottom: 0;">Hamadema</h1>
+            </a>
+        </header>
+
+        <div class="page-content">
+            <h1>About Our Search Engine</h1>
+            <p>Hamadema is Sri Lanka's premier technology search engine. We exist to solve a simple problem: finding the exact tech gear you need across dozens of different websites is incredibly time-consuming and difficult.</p>
+            
+            <p>Our solution is a lightning-fast search engine that organizes the internet's electronics. We aggregate publicly available product data from across the web into a single, unified search experience. By centralizing this information, we help users find exactly what they are looking for in seconds, comparing prices and specifications instantly.</p>
+            
+            <p>At the same time, we serve as a powerful, free discovery platform for retailers. By indexing their public product pages, we provide massive exposure and drive high-intent, ready-to-buy traffic directly to their websites.</p>
+            
+            <div style="background: #f1f5f9; padding: 1.5rem; border-left: 4px solid var(--primary-color); margin-top: 2rem;">
+                <strong>Disclaimer:</strong> Hamadema is purely an independent search engine and data aggregator. We do not sell any products directly, and we are not affiliated, associated, authorized, endorsed by, or in any way officially connected with the individual stores whose public listings we index. All product names, logos, and brands are property of their respective owners.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

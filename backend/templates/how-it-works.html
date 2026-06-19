@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How We Find Products | Hamadema</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .page-content { max-width: 800px; margin: 4rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h1 { font-size: 2.5rem; margin-bottom: 1.5rem; color: var(--text-main); }
+        h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: var(--text-main); }
+        p { font-size: 1.1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body class="results-mode">
+    <div class="top-bar">
+        <div class="top-bar-container">
+            <div class="top-bar-left">
+                <span>Searching 15,000+ products across top Sri Lankan tech stores</span>
+            </div>
+            <div class="top-bar-right">
+                <a href="/">Back to Search</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container main-content">
+        <header class="header-container" style="margin-top: 2rem;">
+            <a href="/" class="logo" style="text-decoration: none;">
+                <h1 style="font-size: 2rem; margin-bottom: 0;">Hamadema</h1>
+            </a>
+        </header>
+
+        <div class="page-content">
+            <h1>How We Find Products</h1>
+            
+            <h2>1. Public Web Indexing</h2>
+            <p>Much like how Google or Bing index websites to help you find information, our proprietary search engine periodically indexes publicly available product pages from various technology retailers across Sri Lanka. We scan these public pages to organize unstructured data—such as product titles, current prices, technical specifications (RAM, Storage), and stock statuses—into a searchable index.</p>
+            
+            <h2>2. Lightning-Fast Search</h2>
+            <p>Once the public data is indexed, it is powered by an ultra-fast search backend that can process typos, synonyms, and complex filters in milliseconds. When you search for "gaming laptop under 200,000", Hamadema queries this index to instantly retrieve the most relevant public listings from multiple stores side-by-side.</p>
+            
+            <h2>3. Directing You to the Source</h2>
+            <p>We do not host checkout systems, handle deliveries, or sell any inventory. We are purely a bridge. When you find the perfect product on Hamadema and click on it, you are seamlessly redirected to the original retailer's website. You complete your purchase directly with them.</p>
+
+            <p>By operating this way, we empower consumers with transparent search capabilities while providing local e-commerce stores with increased visibility and direct customer referrals.</p>
+        </div>
+    </div>
+</body>
+</html>
