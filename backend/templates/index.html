@@ -376,12 +376,63 @@
                     return;
                 }
                 
+                const suggestions = new Set();
+                const qLower = query.toLowerCase().trim();
+
+                // 1. Suggest Category combinations
+                if (data.facetDistribution && data.facetDistribution.category) {
+                    const cats = data.facetDistribution.category;
+                    const sortedCats = Object.entries(cats).sort((a,b) => b[1] - a[1]).map(e => e[0]);
+                    
+                    sortedCats.slice(0, 3).forEach(cat => {
+                        const cLower = cat.toLowerCase();
+                        if (cLower.startsWith(qLower)) {
+                            // If typing "lap", suggest "Laptop"
+                            suggestions.add(cLower);
+                        } else if (!qLower.includes(cLower)) {
+                            // If typing "asus", suggest "asus laptop"
+                            suggestions.add(`${qLower} ${cLower}`);
+                        }
+                    });
+                }
+
+                // 2. Suggest Brand combinations
+                if (data.facetDistribution && data.facetDistribution.brand) {
+                    const brands = data.facetDistribution.brand;
+                    const sortedBrands = Object.entries(brands).sort((a,b) => b[1] - a[1]).map(e => e[0]);
+                    
+                    sortedBrands.slice(0, 2).forEach(brand => {
+                        const bLower = brand.toLowerCase();
+                        if (bLower.startsWith(qLower)) {
+                            suggestions.add(bLower);
+                        } else if (!qLower.includes(bLower)) {
+                            suggestions.add(`${bLower} ${qLower}`); // e.g. "asus macbook" (unlikely but possible), "apple mac"
+                        }
+                    });
+                }
+
+                // 3. Add top hit short names
+                data.hits.slice(0, 3).forEach(hit => {
+                    // Get first 3-4 words of the product title
+                    const words = hit.title.replace(/[^a-zA-Z0-9 ]/g, '').split(/\s+/).slice(0, 4).join(' ').toLowerCase();
+                    if (words.includes(qLower) && words !== qLower) {
+                        suggestions.add(words);
+                    }
+                });
+
+                if (suggestions.size === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+                
                 let html = '';
-                data.hits.forEach(hit => {
+                Array.from(suggestions).slice(0, 6).forEach(sugg => {
                     html += `
-                        <div class="autocomplete-item" onclick="selectSuggestion('${(hit.title || '').replace(/'/g, "\\'")}')">
-                            <div class="autocomplete-item-title">${hit.title}</div>
-                            <div class="autocomplete-item-category">${hit.price} &bull; ${hit.source_site.replace('.lk', '')}</div>
+                        <div class="autocomplete-item" onclick="selectSuggestion('${sugg.replace(/'/g, "\\'")}')">
+                            <div class="autocomplete-item-title" style="display:flex; align-items:center; gap:8px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <span>${sugg}</span>
+                            </div>
                         </div>
                     `;
                 });
