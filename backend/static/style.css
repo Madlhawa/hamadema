@@ -98,28 +98,90 @@ header p {
 }
 
 .search-box {
+    position: relative;
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 3rem;
-    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 30px;
+    padding: 0.5rem 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .search-box input {
     flex: 1;
-    max-width: 500px;
-    padding: 0.85rem 1.25rem;
-    border-radius: 9999px;
-    border: 1px solid #cbd5e1;
-    background-color: var(--card-bg);
-    color: var(--text-main);
-    font-size: 1rem;
+    border: none;
     outline: none;
-    transition: border-color 0.3s;
+    padding: 0.5rem;
+    font-size: 1rem;
+    font-family: inherit;
 }
 
-.search-box input:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+.search-box button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-box button:hover {
+    background: var(--primary-hover);
+}
+
+/* Autocomplete Dropdown */
+.autocomplete-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.autocomplete-dropdown.hidden {
+    display: none;
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: #f8fafc;
+}
+
+.autocomplete-item-title {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.autocomplete-item-category {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 .results-mode .search-box input {
@@ -553,6 +615,12 @@ button:active {
     display: flex;
     align-items: center;
     gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.card:hover .compare-checkbox,
+.compare-checkbox:has(input:checked) {
+    opacity: 1;
 }
 .compare-checkbox input {
     cursor: pointer;

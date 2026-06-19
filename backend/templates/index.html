@@ -15,10 +15,11 @@
                 <p>Everything you need. Search products across multiple Sri Lankan sites instantly.</p>
             </a>
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search for products (e.g. laptop, phone)..." autofocus>
+                <input type="text" id="searchInput" placeholder="Search for products (e.g. laptop, phone)..." autofocus autocomplete="off">
                 <button onclick="performSearch()" title="Search" aria-label="Search">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 </button>
+                <div id="autocompleteDropdown" class="autocomplete-dropdown hidden"></div>
             </div>
         </header>
 
@@ -349,13 +350,68 @@
         }, { rootMargin: "100px" });
         observer.observe(document.getElementById('scrollAnchor'));
 
-        // Debounced Search on Input
+        // Debounced Autocomplete on Input
         let searchTimeout;
         document.getElementById('searchInput').addEventListener('input', function(e) {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
-                performSearch(1);
+                fetchSuggestions();
             }, 300);
+        });
+
+        async function fetchSuggestions() {
+            const query = document.getElementById('searchInput').value;
+            const dropdown = document.getElementById('autocompleteDropdown');
+            
+            if (!query.trim()) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/search?q=${encodeURIComponent(query)}&limit=5`);
+                const data = await res.json();
+                
+                if (!data.hits || data.hits.length === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+                
+                let html = '';
+                data.hits.forEach(hit => {
+                    html += `
+                        <div class="autocomplete-item" onclick="selectSuggestion('${(hit.title || '').replace(/'/g, "\\'")}')">
+                            <div class="autocomplete-item-title">${hit.title}</div>
+                            <div class="autocomplete-item-category">${hit.price} &bull; ${hit.source_site.replace('.lk', '')}</div>
+                        </div>
+                    `;
+                });
+                dropdown.innerHTML = html;
+                dropdown.classList.remove('hidden');
+            } catch (e) {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function selectSuggestion(title) {
+            document.getElementById('searchInput').value = title;
+            document.getElementById('autocompleteDropdown').classList.add('hidden');
+            performSearch(1);
+        }
+
+        // Trigger search on Enter
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('autocompleteDropdown').classList.add('hidden');
+                performSearch(1);
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-box')) {
+                document.getElementById('autocompleteDropdown').classList.add('hidden');
+            }
         });
         
         // Ensure changing static filters resets to page 1

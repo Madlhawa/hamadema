@@ -27,7 +27,7 @@ def search():
     in_stock = request.args.get('in_stock', 'false').lower() == 'true'
     
     page = int(request.args.get('page', 1))
-    limit = 24
+    limit = int(request.args.get('limit', 24))
     offset = (page - 1) * limit
     
     # Dynamic facets
