@@ -402,6 +402,13 @@ button:active {
     align-items: start;
 }
 
+.mobile-filter-btn {
+    display: none;
+}
+.drawer-overlay {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .layout-grid {
         grid-template-columns: 1fr;
@@ -453,13 +460,6 @@ button:active {
     .drawer-overlay.show {
         display: block;
     }
-}
-
-.mobile-filter-btn {
-    display: none;
-}
-.drawer-overlay {
-    display: none;
 }
 
 /* Sidebar Styling */
