@@ -413,7 +413,7 @@
                             </h3>
                             <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                                 <p class="price">${item.price || 'Price N/A'}</p>
-                                <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}&body=I%20would%20like%20to%20report%20this%20listing:%0A%0AProduct:%20${encodeURIComponent(item.title)}%0AStore:%20${item.source_site}%0A%0AReason:%20" class="report-link" onclick="event.stopPropagation();">Report</a>
+                                <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}&body=I%20would%20like%20to%20report%20this%20listing:%0A%0AProduct:%20${encodeURIComponent(item.title)}%0AStore:%20${item.source_site}%0A%0AReason:%20" class="report-link" onclick="event.stopPropagation();" title="Report this listing"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></a>
                             </div>
                         </div>
                     `;
