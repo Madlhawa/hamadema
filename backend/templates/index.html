@@ -555,7 +555,7 @@
             }
             
             try {
-                const res = await fetch(`/search?q=${encodeURIComponent(query)}&limit=5`);
+                const res = await fetch(`/search?q=${encodeURIComponent(query)}&limit=5&is_autocomplete=true`);
                 const data = await res.json();
                 
                 if (!data.hits || data.hits.length === 0) {

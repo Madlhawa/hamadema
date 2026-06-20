@@ -143,7 +143,8 @@ def search():
         result_count = results.get('estimatedTotalHits', 0)
         
         # Log the search
-        if query.strip():
+        is_autocomplete = request.args.get('is_autocomplete', 'false').lower() == 'true'
+        if query.strip() and not is_autocomplete:
             try:
                 conn = get_db_connection()
                 cursor = conn.cursor()
