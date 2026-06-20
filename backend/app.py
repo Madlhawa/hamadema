@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import meilisearch
+import psycopg2
 import os
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -104,6 +106,62 @@ def search():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+def check_auth(username, password):
+    admin_user = os.environ.get('ADMIN_USER', 'admin')
+    admin_pass = os.environ.get('ADMIN_PASS', 'admin')
+    return username == admin_user and password == admin_pass
+
+def authenticate():
+    return Response(
+    'Could not verify your access level for that URL.\n'
+    'You have to login with proper credentials', 401,
+    {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/admin')
+@requires_auth
+def admin_dashboard():
+    db_settings = {
+        "dbname": os.environ.get("POSTGRES_DB", "lanka_aggregator"),
+        "user": os.environ.get("POSTGRES_USER", "scraper_user"),
+        "password": os.environ.get("POSTGRES_PASSWORD", "supersecret"),
+        "host": os.environ.get("POSTGRES_HOST", "localhost"),
+        "port": os.environ.get("POSTGRES_PORT", "5432"),
+    }
+    stats = []
+    error = None
+    try:
+        conn = psycopg2.connect(**db_settings)
+        cursor = conn.cursor()
+        query = """
+            SELECT source_site, COUNT(id) as item_count, MAX(scraped_at) as last_scraped
+            FROM raw_items
+            GROUP BY source_site
+            ORDER BY item_count DESC;
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        for row in rows:
+            stats.append({
+                "source_site": row[0],
+                "item_count": row[1],
+                "last_scraped": row[2]
+            })
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        error = str(e)
+        
+    return render_template('admin.html', stats=stats, error=error)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

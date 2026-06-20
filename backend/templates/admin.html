@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamadema - Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .admin-header h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 0;
+        }
+        .stats-table-wrapper {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        table.admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        table.admin-table th, table.admin-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        table.admin-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+        table.admin-table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        table.admin-table td {
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+        table.admin-table td.store-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .total-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+        .total-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .error-message {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #f87171;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <a href="/" class="btn" style="text-decoration: none;">&larr; Back to Main Site</a>
+        </div>
+
+        {% if error %}
+            <div class="error-message">
+                <strong>Error fetching data:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% set total_items = 0 %}
+        {% for stat in stats %}
+            {% set total_items = total_items + stat.item_count %}
+        {% endfor %}
+
+        <div class="total-card">
+            <div class="total-value">{{ "{:,}".format(total_items) }}</div>
+            <div class="total-label">Total Indexed Items Across All Stores</div>
+        </div>
+
+        <div class="stats-table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Store Domain</th>
+                        <th>Indexed Items</th>
+                        <th>Last Scraped (UTC)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if stats %}
+                        {% for stat in stats %}
+                        <tr>
+                            <td class="store-name">{{ stat.source_site }}</td>
+                            <td>{{ "{:,}".format(stat.item_count) }}</td>
+                            <td>
+                                {% if stat.last_scraped %}
+                                    {{ stat.last_scraped.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3">
+                                <div class="empty-state">
+                                    No data available. Ensure scraping jobs are running successfully.
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>
