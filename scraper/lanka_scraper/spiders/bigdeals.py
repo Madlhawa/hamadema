@@ -8,7 +8,9 @@ class BigDealsSpider(scrapy.Spider):
         # Start at the homepage to dynamically extract category links
         yield Request(
             url="https://bigdeals.lk/",
-            callback=self.parse_homepage
+            callback=self.parse_homepage,
+            dont_filter=True,
+            meta={"impersonate": "chrome116"}
         )
 
     def parse_homepage(self, response):
@@ -27,7 +29,12 @@ class BigDealsSpider(scrapy.Spider):
                     category_links.add(href)
                 
         for url in category_links:
-            yield Request(url=url, callback=self.parse)
+            yield Request(
+                url=url, 
+                callback=self.parse,
+                dont_filter=True,
+                meta={"impersonate": "chrome116"}
+            )
 
     def parse(self, response):
         products = response.css(".product-container")
@@ -62,4 +69,9 @@ class BigDealsSpider(scrapy.Spider):
         # Pagination
         next_page = response.css('a[rel="next"]::attr(href)').get()
         if next_page:
-            yield Request(url=next_page, callback=self.parse)
+            yield Request(
+                url=next_page, 
+                callback=self.parse,
+                dont_filter=True,
+                meta={"impersonate": "chrome116"}
+            )
