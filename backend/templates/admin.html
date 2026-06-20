@@ -272,7 +272,7 @@
         });
 
         // Initialize Traffic Chart
-        const trafficData = {{ traffic | tojson | safe if traffic else '[]' }};
+        const trafficData = {{ traffic | tojson | safe }};
         if (trafficData && trafficData.length > 0) {
             const ctx = document.getElementById('trafficChart').getContext('2d');
             new Chart(ctx, {
