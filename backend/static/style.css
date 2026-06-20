@@ -255,6 +255,7 @@ button:active {
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    min-width: 0;
 }
 
 .card-content {
@@ -262,6 +263,7 @@ button:active {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    min-width: 0;
 }
 
 .card:hover {
@@ -283,6 +285,9 @@ button:active {
     font-weight: 800;
     color: var(--accent);
     margin: 0 0 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tags {
