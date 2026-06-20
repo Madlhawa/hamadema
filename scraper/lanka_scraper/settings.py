@@ -35,11 +35,11 @@ DOWNLOADER_MIDDLEWARES = {
 
 # --- HIGH CONCURRENCY SETTINGS FOR LARGE PROXY POOLS ---
 # Send many requests in parallel since we have 100 proxies
-CONCURRENT_REQUESTS = 8
-CONCURRENT_REQUESTS_PER_DOMAIN = 8
+CONCURRENT_REQUESTS = 24
+CONCURRENT_REQUESTS_PER_DOMAIN = 12
 
 # Disable the delay so it scrapes as fast as possible across all IPs
-DOWNLOAD_DELAY = 2
+DOWNLOAD_DELAY = 1
 
 # Disable AutoThrottle so it doesn't slow down the spider artificially
 AUTOTHROTTLE_ENABLED = False
