@@ -55,12 +55,13 @@ def search():
         search_params = {
             'limit': limit,
             'offset': offset,
-            'facets': ['category', 'brand', 'ram', 'storage', 'price_numeric']
+            'facets': ['category', 'brand', 'ram', 'storage', 'price_numeric', 'source_site']
         }
         
         filter_conditions = []
-        if source_param:
-            sources_filter = " OR ".join([f"source_site = '{s.strip()}'" for s in source_param.split(',') if s.strip()])
+        source_site_param = request.args.get('source_site', '')
+        if source_site_param:
+            sources_filter = " OR ".join([f"source_site = '{s.strip()}'" for s in source_site_param.split(',') if s.strip()])
             if sources_filter:
                 filter_conditions.append(f"({sources_filter})")
                 

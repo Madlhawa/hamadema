@@ -83,6 +83,9 @@
                 </aside>
 
                 <div class="results-container">
+                    <p class="disclaimer-text" style="display:none; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                        Prices and availability are fetched from public listings and are subject to change. Always verify the final price on the seller's website.
+                    </p>
                     <div id="results" class="results-grid"></div>
                     <div id="scrollAnchor" style="height: 20px; width: 100%;"></div>
                 </div>
@@ -321,6 +324,7 @@
 
             document.body.classList.remove('landing-mode');
             document.body.classList.add('results-mode');
+            document.querySelector('.disclaimer-text').style.display = 'block';
 
             isFetching = true;
             showSkeletons(append);
@@ -404,9 +408,13 @@
                         <div class="card-content">
                             <h3>
                                 ${item.title || 'Unknown Product'}
+                                <svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                 <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
                             </h3>
-                            <p class="price">${item.price || 'Price N/A'}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                                <p class="price">${item.price || 'Price N/A'}</p>
+                                <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}&body=I%20would%20like%20to%20report%20this%20listing:%0A%0AProduct:%20${encodeURIComponent(item.title)}%0AStore:%20${item.source_site}%0A%0AReason:%20" class="report-link" onclick="event.stopPropagation();">Report</a>
+                            </div>
                         </div>
                     `;
                     resultsDiv.appendChild(card);
@@ -424,8 +432,8 @@
             container.innerHTML = '';
             if (!facetDist) return;
 
-            const orderedFacets = ['category', 'brand', 'ram', 'storage'];
-            const facetDisplayNames = {'category': 'Category', 'brand': 'Brand', 'ram': 'RAM', 'storage': 'Storage'};
+            const orderedFacets = ['source_site', 'category', 'brand', 'ram', 'storage'];
+            const facetDisplayNames = {'source_site': 'Store', 'category': 'Category', 'brand': 'Brand', 'ram': 'RAM', 'storage': 'Storage'};
 
             orderedFacets.forEach(facetKey => {
                 const dist = facetDist[facetKey];
