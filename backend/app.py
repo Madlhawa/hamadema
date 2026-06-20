@@ -238,5 +238,23 @@ def change_password():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/price-history/<doc_id>', methods=['GET'])
+def get_price_history(doc_id):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT price_numeric, recorded_at FROM price_history WHERE doc_id = %s ORDER BY recorded_at ASC;",
+            (doc_id,)
+        )
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        history = [{"price": r[0], "date": r[1].strftime('%Y-%m-%d')} for r in rows]
+        return jsonify({"history": history})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

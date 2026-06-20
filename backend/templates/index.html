@@ -6,6 +6,7 @@
     <title>Hamadema</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="landing-mode">
     <div class="top-bar">
@@ -102,6 +103,19 @@
                     <button class="close-btn" onclick="closeCompareModal()">&times;</button>
                 </div>
                 <div id="compareTableContainer" class="modal-body"></div>
+            </div>
+        </div>
+
+        <div id="priceHistoryModal" class="modal-overlay">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 id="priceHistoryTitle" style="font-size: 1.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%;">Price History</h2>
+                    <button class="close-btn" onclick="closePriceHistoryModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="priceHistoryChart"></canvas>
+                    <p id="priceHistoryLoading" style="text-align: center; color: var(--text-muted);">Loading...</p>
+                </div>
             </div>
         </div>
 
@@ -434,7 +448,10 @@
                             </h3>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
                                 <p class="price" style="margin: 0;">${item.price || 'Price N/A'}</p>
-                                <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}&body=I%20would%20like%20to%20report%20this%20listing:%0A%0AProduct:%20${encodeURIComponent(item.title)}%0AStore:%20${item.source_site}%0A%0AReason:%20" class="report-link" onclick="event.stopPropagation();" title="Report this listing" style="display: flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></a>
+                                <div style="display: flex; gap: 10px;">
+                                    <a href="#" class="report-link" onclick="openPriceHistory(event, '${item.id}', '${(item.title || '').replace(/'/g, "\\'")}')" title="Price History" style="display: flex; align-items: center; color: var(--text-muted);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></a>
+                                    <a href="mailto:info.hamadema@gmail.com?subject=Report%20Listing%20${item.id}&body=I%20would%20like%20to%20report%20this%20listing:%0A%0AProduct:%20${encodeURIComponent(item.title)}%0AStore:%20${item.source_site}%0A%0AReason:%20" class="report-link" onclick="event.stopPropagation();" title="Report this listing" style="display: flex; align-items: center;"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></a>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -601,6 +618,75 @@
         document.querySelectorAll('aside select, aside input[type="checkbox"], aside input[type="number"]').forEach(el => {
             el.addEventListener('change', () => performSearch(1));
         });
+
+        let priceChart = null;
+
+        async function openPriceHistory(event, docId, title) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            document.getElementById('priceHistoryTitle').innerText = 'Price History: ' + title;
+            document.getElementById('priceHistoryModal').style.display = 'flex';
+            document.getElementById('priceHistoryChart').style.display = 'none';
+            document.getElementById('priceHistoryLoading').style.display = 'block';
+            document.getElementById('priceHistoryLoading').innerText = 'Loading...';
+            
+            try {
+                const res = await fetch(`/api/price-history/${docId}`);
+                const data = await res.json();
+                
+                document.getElementById('priceHistoryLoading').style.display = 'none';
+                
+                if (data.history && data.history.length > 0) {
+                    document.getElementById('priceHistoryChart').style.display = 'block';
+                    
+                    if (priceChart) priceChart.destroy();
+                    
+                    const ctx = document.getElementById('priceHistoryChart').getContext('2d');
+                    priceChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.history.map(d => d.date),
+                            datasets: [{
+                                label: 'Price (LKR)',
+                                data: data.history.map(d => d.price),
+                                borderColor: '#2563eb',
+                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                fill: true,
+                                pointBackgroundColor: '#2563eb'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'Rs. ' + value.toLocaleString();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    document.getElementById('priceHistoryLoading').style.display = 'block';
+                    document.getElementById('priceHistoryLoading').innerText = 'No price history available yet.';
+                }
+            } catch (e) {
+                document.getElementById('priceHistoryLoading').innerText = 'Failed to load price history.';
+            }
+        }
+
+        function closePriceHistoryModal() {
+            document.getElementById('priceHistoryModal').style.display = 'none';
+        }
     </script>
     <footer class="site-footer">
         <div class="footer-container">

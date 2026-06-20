@@ -118,6 +118,16 @@ def run_sync():
 
     import hashlib
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS price_history (
+        id SERIAL PRIMARY KEY,
+        doc_id VARCHAR(255) NOT NULL,
+        price_numeric INT NOT NULL,
+        recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+    conn.commit()
+
     cursor.execute("SELECT id, source_site, raw_payload FROM raw_items;")
     rows = cursor.fetchall()
     
@@ -150,6 +160,22 @@ def run_sync():
             **facets
         }
         documents[doc_id] = doc
+
+        # Check latest recorded price
+        cursor.execute(
+            "SELECT price_numeric FROM price_history WHERE doc_id = %s ORDER BY recorded_at DESC LIMIT 1;",
+            (doc_id,)
+        )
+        last_price_row = cursor.fetchone()
+        
+        # If no previous price, or price has changed, insert a new record
+        if price_num > 0 and (not last_price_row or last_price_row[0] != price_num):
+            cursor.execute(
+                "INSERT INTO price_history (doc_id, price_numeric) VALUES (%s, %s);",
+                (doc_id, price_num)
+            )
+
+    conn.commit()
 
     docs_list = list(documents.values())
     if docs_list:
