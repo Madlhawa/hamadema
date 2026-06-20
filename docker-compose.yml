@@ -67,6 +67,10 @@ services:
     environment:
       - MEILI_HOST=http://meilisearch:7700
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB:-lanka_aggregator}
+      - POSTGRES_USER=${POSTGRES_USER:-scraper_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-supersecret}
     depends_on:
       - meilisearch
     restart: unless-stopped
