@@ -398,10 +398,10 @@
                     const isChecked = compareList.some(c => c.id === item.id) ? 'checked' : '';
                     
                     card.innerHTML = `
-                        <label class="compare-checkbox" onclick="event.stopPropagation();">
-                            <input type="checkbox" ${isChecked} onclick="toggleCompare(event, '${item.id}', '${(item.title || '').replace(/'/g, "\\'")}', '${item.price}', '${item.brand || ''}', '${item.ram || ''}', '${item.storage || ''}', '${item.source_site}')"> Compare
-                        </label>
                         <div class="card-img-wrapper">
+                            <label class="compare-checkbox" onclick="event.stopPropagation();">
+                                <input type="checkbox" ${isChecked} onclick="toggleCompare(event, '${item.id}', '${(item.title || '').replace(/'/g, "\\'")}', '${item.price}', '${item.brand || ''}', '${item.ram || ''}', '${item.storage || ''}', '${item.source_site}')"> Compare
+                            </label>
                             <span class="badge ${item.stock_status === 'In Stock' ? 'badge-in-stock' : 'badge-out-of-stock'}">${item.stock_status || 'Unknown'}</span>
                             ${item.image_url ? `<img src="${item.image_url}" alt="${(item.title || '').replace(/"/g, '&quot;')}" loading="lazy">` : `<div class="no-image">No Image</div>`}
                         </div>
