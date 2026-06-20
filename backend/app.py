@@ -18,7 +18,11 @@ except Exception as e:
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    q = request.args.get('q', '')
+    title = f"Search for {q} - Hamadema" if q else "Hamadema - Sri Lanka's Hardware Search Engine"
+    description = f"Compare prices for {q} across top Sri Lankan tech stores on Hamadema." if q else "Everything you need. Search products across multiple Sri Lankan sites instantly."
+    
+    return render_template('index.html', title=title, description=description, query=q)
 
 @app.route('/about')
 def about():

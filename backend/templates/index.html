@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hamadema</title>
+    <title>{{ title | default("Hamadema") }}</title>
+    <meta name="description" content="{{ description | default('Everything you need. Search products across multiple Sri Lankan sites instantly.') }}">
+    <meta property="og:title" content="{{ title | default('Hamadema') }}">
+    <meta property="og:description" content="{{ description | default('Everything you need. Search products across multiple Sri Lankan sites instantly.') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -375,6 +378,22 @@
                     url += `&${key}=${encodeURIComponent(values.join(','))}`;
                 }
 
+                if (!append) {
+                    const stateUrlParams = new URLSearchParams();
+                    if (query) stateUrlParams.set('q', query);
+                    if (sortFilter) stateUrlParams.set('sort', sortFilter);
+                    if (minPrice) stateUrlParams.set('min_price', minPrice);
+                    if (maxPrice) stateUrlParams.set('max_price', maxPrice);
+                    if (inStock) stateUrlParams.set('in_stock', 'true');
+                    
+                    for (const [key, values] of Object.entries(activeFacets)) {
+                        stateUrlParams.set(key, values.join(','));
+                    }
+                    
+                    const newUrl = window.location.pathname + '?' + stateUrlParams.toString();
+                    window.history.replaceState({}, '', newUrl);
+                }
+
                 const res = await fetch(url);
                 const data = await res.json();
                 
@@ -687,6 +706,22 @@
         function closePriceHistoryModal() {
             document.getElementById('priceHistoryModal').style.display = 'none';
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('q')) {
+                document.getElementById('searchInput').value = params.get('q');
+                if (params.has('sort')) document.getElementById('sortFilter').value = params.get('sort');
+                if (params.has('in_stock')) document.getElementById('inStock').checked = true;
+                
+                // We don't populate min/max here immediately because the bounds are set async, 
+                // but setting the input box value helps performSearch pick it up
+                if (params.has('min_price')) document.getElementById('minPrice').value = params.get('min_price');
+                if (params.has('max_price')) document.getElementById('maxPrice').value = params.get('max_price');
+                
+                performSearch(1);
+            }
+        });
     </script>
     <footer class="site-footer">
         <div class="footer-container">
