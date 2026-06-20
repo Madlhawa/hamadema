@@ -4,13 +4,30 @@ from scrapy.http import Request
 class BigDealsSpider(scrapy.Spider):
     name = "bigdeals"
     allowed_domains = ["bigdeals.lk"]
-    start_urls = [
-        "https://bigdeals.lk/smartphones",
-        "https://bigdeals.lk/dekstops-and-pc",
-        "https://bigdeals.lk/laptops",
-        "https://bigdeals.lk/home-appliances",
-        "https://bigdeals.lk/electronic-devices",
-    ]
+    def start_requests(self):
+        # Start at the homepage to dynamically extract category links
+        yield Request(
+            url="https://bigdeals.lk/",
+            callback=self.parse_homepage
+        )
+
+    def parse_homepage(self, response):
+        category_links = set()
+        
+        # Look in known menu containers
+        for href in response.css('nav a::attr(href), .menu a::attr(href), .vertical-menu-list a::attr(href), .categories a::attr(href)').getall():
+            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
+                category_links.add(href)
+                
+        # Also grab any hrefs matching the pattern just in case
+        for href in response.css('a::attr(href)').getall():
+            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
+                # filter out obvious non-categories
+                if not any(x in href for x in ['login', 'contact', 'policy', 'about', 'terms', 'cart', 'checkout']):
+                    category_links.add(href)
+                
+        for url in category_links:
+            yield Request(url=url, callback=self.parse)
 
     def parse(self, response):
         products = response.css(".product-container")
