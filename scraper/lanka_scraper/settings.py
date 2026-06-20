@@ -5,8 +5,8 @@ NEWSPIDER_MODULE = "lanka_scraper.spiders"
 
 # --- ANTI-BOT CONFIGURATION (scrapy-impersonate) ---
 DOWNLOAD_HANDLERS = {
-    # "http": "scrapy_impersonate.ImpersonateDownloadHandler",
-    # "https": "scrapy_impersonate.ImpersonateDownloadHandler",
+    "http": "scrapy_impersonate.ImpersonateDownloadHandler",
+    "https": "scrapy_impersonate.ImpersonateDownloadHandler",
 }
 
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
@@ -14,9 +14,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 ROBOTSTXT_OBEY = False
 
 # --- PIPELINE CONFIGURATION ---
-# ITEM_PIPELINES = {
-#    "lanka_scraper.pipelines.PostgresRawPipeline": 300,
-# }
+ITEM_PIPELINES = {
+   "lanka_scraper.pipelines.PostgresRawPipeline": 300,
+}
 
 import os
 
@@ -35,11 +35,11 @@ DOWNLOADER_MIDDLEWARES = {
 
 # --- HIGH CONCURRENCY SETTINGS FOR LARGE PROXY POOLS ---
 # Send many requests in parallel since we have 100 proxies
-CONCURRENT_REQUESTS = 32
-CONCURRENT_REQUESTS_PER_DOMAIN = 32
+CONCURRENT_REQUESTS = 8
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
 
 # Disable the delay so it scrapes as fast as possible across all IPs
-DOWNLOAD_DELAY = 0
+DOWNLOAD_DELAY = 2
 
 # Disable AutoThrottle so it doesn't slow down the spider artificially
 AUTOTHROTTLE_ENABLED = False
