@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, redirect, url_for
 import meilisearch
 import psycopg2
 import os
 from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -107,10 +108,63 @@ def search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def get_db_connection():
+    db_settings = {
+        "dbname": os.environ.get("POSTGRES_DB", "lanka_aggregator"),
+        "user": os.environ.get("POSTGRES_USER", "scraper_user"),
+        "password": os.environ.get("POSTGRES_PASSWORD", "supersecret"),
+        "host": os.environ.get("POSTGRES_HOST", "localhost"),
+        "port": os.environ.get("POSTGRES_PORT", "5432"),
+    }
+    return psycopg2.connect(**db_settings)
+
+def init_db():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS admin_config (
+                key VARCHAR(255) PRIMARY KEY,
+                value VARCHAR(255) NOT NULL
+            );
+        ''')
+        cursor.execute("SELECT value FROM admin_config WHERE key = 'admin_password_hash';")
+        row = cursor.fetchone()
+        
+        if not row:
+            default_pass = os.environ.get('ADMIN_PASS', 'admin')
+            pass_hash = generate_password_hash(default_pass)
+            cursor.execute(
+                "INSERT INTO admin_config (key, value) VALUES (%s, %s);",
+                ('admin_password_hash', pass_hash)
+            )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"DB init error: {e}")
+
+# Initialize db config table on startup
+init_db()
+
 def check_auth(username, password):
     admin_user = os.environ.get('ADMIN_USER', 'admin')
-    admin_pass = os.environ.get('ADMIN_PASS', 'admin')
-    return username == admin_user and password == admin_pass
+    if username != admin_user:
+        return False
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT value FROM admin_config WHERE key = 'admin_password_hash';")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if row:
+            return check_password_hash(row[0], password)
+    except Exception:
+        pass
+        
+    return password == os.environ.get('ADMIN_PASS', 'admin')
 
 def authenticate():
     return Response(
@@ -130,17 +184,10 @@ def requires_auth(f):
 @app.route('/admin')
 @requires_auth
 def admin_dashboard():
-    db_settings = {
-        "dbname": os.environ.get("POSTGRES_DB", "lanka_aggregator"),
-        "user": os.environ.get("POSTGRES_USER", "scraper_user"),
-        "password": os.environ.get("POSTGRES_PASSWORD", "supersecret"),
-        "host": os.environ.get("POSTGRES_HOST", "localhost"),
-        "port": os.environ.get("POSTGRES_PORT", "5432"),
-    }
     stats = []
     error = None
     try:
-        conn = psycopg2.connect(**db_settings)
+        conn = get_db_connection()
         cursor = conn.cursor()
         query = """
             SELECT source_site, COUNT(id) as item_count, MAX(scraped_at) as last_scraped
@@ -162,6 +209,34 @@ def admin_dashboard():
         error = str(e)
         
     return render_template('admin.html', stats=stats, error=error)
+
+@app.route('/admin/change-password', methods=['POST'])
+@requires_auth
+def change_password():
+    current_pass = request.form.get('current_password')
+    new_pass = request.form.get('new_password')
+    
+    auth = request.authorization
+    if not auth or not check_auth(auth.username, current_pass):
+        return jsonify({"error": "Incorrect current password."}), 403
+        
+    if not new_pass or len(new_pass) < 4:
+        return jsonify({"error": "New password must be at least 4 characters long."}), 400
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        new_hash = generate_password_hash(new_pass)
+        cursor.execute(
+            "UPDATE admin_config SET value = %s WHERE key = 'admin_password_hash';",
+            (new_hash,)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

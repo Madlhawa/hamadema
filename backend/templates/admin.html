@@ -159,7 +159,61 @@
                 </tbody>
             </table>
         </div>
+        <div class="stats-table-wrapper" style="margin-top: 3rem;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <h2 style="margin: 0; font-size: 1.25rem;">Security Settings</h2>
+            </div>
+            <div style="padding: 1.5rem;">
+                <form id="changePasswordForm" style="max-width: 400px;">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">Current Password</label>
+                        <input type="password" id="current_password" required style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-family: inherit;">
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">New Password</label>
+                        <input type="password" id="new_password" required minlength="4" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; font-family: inherit;">
+                    </div>
+                    <div id="pwdMsg" style="margin-bottom: 1rem; font-size: 0.9rem; display: none;"></div>
+                    <button type="submit" style="background: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer;">Update Password</button>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <script>
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const currentPass = document.getElementById('current_password').value;
+            const newPass = document.getElementById('new_password').value;
+            const msgDiv = document.getElementById('pwdMsg');
+            
+            const formData = new FormData();
+            formData.append('current_password', currentPass);
+            formData.append('new_password', newPass);
+
+            try {
+                const response = await fetch('/admin/change-password', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                msgDiv.style.display = 'block';
+                if (response.ok && result.success) {
+                    msgDiv.style.color = '#15803d';
+                    msgDiv.innerHTML = 'Password updated successfully! You will need to use it next time you load this page.';
+                    document.getElementById('changePasswordForm').reset();
+                } else {
+                    msgDiv.style.color = '#b91c1c';
+                    msgDiv.innerHTML = result.error || 'An error occurred.';
+                }
+            } catch (err) {
+                msgDiv.style.display = 'block';
+                msgDiv.style.color = '#b91c1c';
+                msgDiv.innerHTML = 'Network error. Please try again.';
+            }
+        });
+    </script>
 
 </body>
 </html>
