@@ -359,25 +359,27 @@ button:active {
 
 .badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
+    top: 8px;
+    right: 8px;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     z-index: 10;
 }
 
 .badge-in-stock {
-    background-color: #16a34a;
-    color: white;
+    background-color: rgba(22, 163, 74, 0.15);
+    color: #15803d;
+    border: 1px solid rgba(22, 163, 74, 0.2);
 }
 
 .badge-out-of-stock {
-    background-color: #dc2626;
-    color: white;
+    background-color: rgba(220, 38, 38, 0.1);
+    color: #b91c1c;
+    border: 1px solid rgba(220, 38, 38, 0.2);
 }
 
 .title-tag {
