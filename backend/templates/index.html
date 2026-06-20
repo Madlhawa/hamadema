@@ -345,13 +345,24 @@
             const maxPrice = document.getElementById('maxPrice').value.replace(/,/g, '');
             const inStock = document.getElementById('inStock').checked;
 
-            const dynamicCheckboxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]:checked');
+            const dynamicCheckboxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]');
             const activeFacets = {};
-            dynamicCheckboxes.forEach(cb => {
-                const facet = cb.getAttribute('data-facet');
-                if (!activeFacets[facet]) activeFacets[facet] = [];
-                activeFacets[facet].push(cb.value);
-            });
+            
+            if (dynamicCheckboxes.length > 0) {
+                const checkedBoxes = document.querySelectorAll('#dynamicFiltersContainer input[type="checkbox"]:checked');
+                checkedBoxes.forEach(cb => {
+                    const facet = cb.getAttribute('data-facet');
+                    if (!activeFacets[facet]) activeFacets[facet] = [];
+                    activeFacets[facet].push(cb.value);
+                });
+            } else {
+                const params = new URLSearchParams(window.location.search);
+                ['category', 'brand', 'ram', 'storage', 'source_site'].forEach(facet => {
+                    if (params.has(facet)) {
+                        activeFacets[facet] = params.get(facet).split(',');
+                    }
+                });
+            }
 
             if (!append) {
                 resultsDiv.innerHTML = '';
