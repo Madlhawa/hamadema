@@ -243,7 +243,7 @@
             const tableContainer = document.getElementById('compareTableContainer');
             
             let html = '<table class="compare-table"><tr><th>Feature</th>';
-            compareList.forEach((item, i) => html += `<th>Item ${i + 1}</th>`);
+            compareList.forEach((item, i) => html += `<th>Item ${i + 1} <div style="margin-top: 8px;"><button onclick="removeFromCompare('${item.id}')" style="background: #ef4444; padding: 4px 8px; font-size: 0.75rem;">Remove</button></div></th>`);
             html += '</tr>';
 
             const fields = [
@@ -269,6 +269,27 @@
 
         function closeCompareModal() {
             document.getElementById('compareModal').style.display = 'none';
+        }
+
+        function removeFromCompare(id) {
+            const index = compareList.findIndex(item => item.id === id);
+            if (index > -1) {
+                compareList.splice(index, 1);
+                
+                // Uncheck the visual checkbox if it's currently rendered on the page
+                const checkboxes = document.querySelectorAll('.compare-checkbox input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    if (cb.getAttribute('onclick').includes(id)) {
+                        cb.checked = false;
+                    }
+                });
+            }
+            renderCompareFooter();
+            if (compareList.length > 0) {
+                openCompareModal();
+            } else {
+                closeCompareModal();
+            }
         }
 
         function showSkeletons(append) {
