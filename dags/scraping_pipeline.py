@@ -58,4 +58,5 @@ with DAG(
     )
 
     # Define execution order
-    [run_nanotek, run_bigdeals_spider, run_tecroot_spider, run_redline_spider, run_mydealz_spider] >> run_data_transformer
+    run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_data_transformer
+    run_bigdeals_spider >> run_redline_spider >> run_data_transformer
