@@ -5,14 +5,28 @@ class BigDealsSpider(scrapy.Spider):
     name = "bigdeals"
     allowed_domains = ["bigdeals.lk"]
     start_urls = [
-        "https://bigdeals.lk/smartphones",
-        "https://bigdeals.lk/dekstops-and-pc",
-        "https://bigdeals.lk/laptops",
-        "https://bigdeals.lk/home-appliances",
-        "https://bigdeals.lk/electronic-devices",
+        "https://bigdeals.lk/"
     ]
 
     def parse(self, response):
+        category_links = set()
+        
+        # Look in known menu containers
+        for href in response.css('nav a::attr(href), .menu a::attr(href), .vertical-menu-list a::attr(href), .categories a::attr(href)').getall():
+            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
+                category_links.add(href)
+                
+        # Also grab any hrefs matching the pattern just in case
+        for href in response.css('a::attr(href)').getall():
+            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
+                # filter out obvious non-categories
+                if not any(x in href for x in ['login', 'contact', 'policy', 'about', 'terms', 'cart', 'checkout']):
+                    category_links.add(href)
+
+        for url in category_links:
+            yield Request(url=url, callback=self.parse_category)
+
+    def parse_category(self, response):
         products = response.css(".product-container")
         for product in products:
             title = product.css(".product-title::text").get()
@@ -45,4 +59,4 @@ class BigDealsSpider(scrapy.Spider):
         # Pagination
         next_page = response.css('a[rel="next"]::attr(href)').get()
         if next_page:
-            yield Request(url=next_page, callback=self.parse)
+            yield Request(url=next_page, callback=self.parse_category)

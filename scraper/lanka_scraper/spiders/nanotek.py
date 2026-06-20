@@ -5,23 +5,16 @@ class NanotekSpider(scrapy.Spider):
     name = "nanotek"
     allowed_domains = ["nanotek.lk"]
     start_urls = [
-        "https://www.nanotek.lk/category/laptop",
-        "https://www.nanotek.lk/category/monitors-monitor-arms",
-        "https://www.nanotek.lk/category/speakers-headsets-ear-buds",
-        "https://www.nanotek.lk/category/keyboardmouse-gamepad-controller"
+        "https://www.nanotek.lk/"
     ]
 
-    def start_requests(self):
-        for url in self.start_urls:
-            yield Request(
-                url=url,
-                callback=self.parse,
-                meta={
-                    "impersonate": "chrome116"
-                }
-            )
-
     def parse(self, response):
+        # Extract category links from the homepage
+        category_links = response.xpath('//li[@class="ty-catListItem"]/a/@href').extract()
+        for link in category_links:
+            yield Request(url=link, callback=self.parse_category, meta={"impersonate": "chrome116"})
+
+    def parse_category(self, response):
         # Find all product blocks
         products = response.css('.ty-productBlock')
         for product in products:
