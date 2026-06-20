@@ -1,0 +1,73 @@
+import scrapy
+from scrapy.http import Request
+
+class RedlineSpider(scrapy.Spider):
+    name = "redline"
+    allowed_domains = ["redlinetech.lk"]
+    start_urls = [
+        "https://www.redlinetech.lk/"
+    ]
+
+    def start_requests(self):
+        for url in self.start_urls:
+            yield Request(url=url, callback=self.parse, meta={"impersonate": "chrome116"})
+
+    def parse(self, response):
+        category_links = set()
+        
+        # Look for category links
+        for href in response.css('a::attr(href)').getall():
+            if href.startswith('https://www.redlinetech.lk/category/') and '?page=' not in href:
+                category_links.add(href)
+                
+        for url in category_links:
+            yield Request(
+                url=url, 
+                callback=self.parse_category,
+                meta={"impersonate": "chrome116"}
+            )
+
+    def parse_category(self, response):
+        products = response.css(".ty-product-block")
+        for product in products:
+            title = product.css("h2::text").get()
+            price_str = product.css(".ty-price::text").get()
+            url = product.css("a::attr(href)").get()
+            image_url = product.css(".ty-img-holder img::attr(src)").get()
+            stock_str = product.css(".ty-msg span::text").get()
+            
+            in_stock = False
+            if stock_str and "in stock" in stock_str.lower():
+                in_stock = True
+
+            if title and price_str:
+                price_clean_str = ''.join(c for c in price_str if c.isdigit() or c == '.')
+                try:
+                    price_clean = float(price_clean_str)
+                except ValueError:
+                    price_clean = 0.0
+
+                if price_clean > 0:
+                    raw_payload = {
+                        "title": title.strip(),
+                        "price": price_clean,
+                        "url": url,
+                        "image_url": image_url,
+                        "in_stock": in_stock,
+                        "stock_status": stock_str.strip() if stock_str else "Out of Stock",
+                        "store": "Redline Technologies",
+                    }
+                    
+                    yield {
+                        "source_site": "redlinetech.lk",
+                        "raw_payload": raw_payload
+                    }
+
+        # Pagination
+        next_page = response.css('a[rel="next"]::attr(href)').get()
+        if next_page:
+            yield Request(
+                url=next_page, 
+                callback=self.parse_category,
+                meta={"impersonate": "chrome116"}
+            )
