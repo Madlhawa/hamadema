@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from datetime import datetime, timedelta
+import pendulum
 
 default_args = {
     'owner': 'airflow',
@@ -15,8 +16,8 @@ with DAG(
     'lanka_aggregator_pipeline',
     default_args=default_args,
     description='Runs Scrapy spider and Meilisearch transformer',
-    schedule_interval='0 */6 * * *',  # Run every 6 hours
-    start_date=datetime(2023, 1, 1),
+    schedule_interval='0 0 * * *',  # Run once a day at midnight (timezone-aware)
+    start_date=pendulum.datetime(2023, 1, 1, tz="Asia/Colombo"),
     catchup=False,
     tags=['scraping'],
 ) as dag:
