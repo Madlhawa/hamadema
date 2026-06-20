@@ -5,8 +5,8 @@ NEWSPIDER_MODULE = "lanka_scraper.spiders"
 
 # --- ANTI-BOT CONFIGURATION (scrapy-impersonate) ---
 DOWNLOAD_HANDLERS = {
-    "http": "scrapy_impersonate.ImpersonateDownloadHandler",
-    "https": "scrapy_impersonate.ImpersonateDownloadHandler",
+    # "http": "scrapy_impersonate.ImpersonateDownloadHandler",
+    # "https": "scrapy_impersonate.ImpersonateDownloadHandler",
 }
 
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
@@ -14,9 +14,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 ROBOTSTXT_OBEY = False
 
 # --- PIPELINE CONFIGURATION ---
-ITEM_PIPELINES = {
-   "lanka_scraper.pipelines.PostgresRawPipeline": 300,
-}
+# ITEM_PIPELINES = {
+#    "lanka_scraper.pipelines.PostgresRawPipeline": 300,
+# }
 
 import os
 

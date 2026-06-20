@@ -4,37 +4,13 @@ from scrapy.http import Request
 class BigDealsSpider(scrapy.Spider):
     name = "bigdeals"
     allowed_domains = ["bigdeals.lk"]
-    def start_requests(self):
-        # Start at the homepage to dynamically extract category links
-        yield Request(
-            url="https://bigdeals.lk/",
-            callback=self.parse_homepage,
-            dont_filter=True,
-            meta={"impersonate": "chrome116"}
-        )
-
-    def parse_homepage(self, response):
-        category_links = set()
-        
-        # Look in known menu containers
-        for href in response.css('nav a::attr(href), .menu a::attr(href), .vertical-menu-list a::attr(href), .categories a::attr(href)').getall():
-            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
-                category_links.add(href)
-                
-        # Also grab any hrefs matching the pattern just in case
-        for href in response.css('a::attr(href)').getall():
-            if href.startswith('https://bigdeals.lk/') and len(href.split('/')) == 4:
-                # filter out obvious non-categories
-                if not any(x in href for x in ['login', 'contact', 'policy', 'about', 'terms', 'cart', 'checkout']):
-                    category_links.add(href)
-                
-        for url in category_links:
-            yield Request(
-                url=url, 
-                callback=self.parse,
-                dont_filter=True,
-                meta={"impersonate": "chrome116"}
-            )
+    start_urls = [
+        "https://bigdeals.lk/smartphones",
+        "https://bigdeals.lk/dekstops-and-pc",
+        "https://bigdeals.lk/laptops",
+        "https://bigdeals.lk/home-appliances",
+        "https://bigdeals.lk/electronic-devices",
+    ]
 
     def parse(self, response):
         products = response.css(".product-container")
@@ -69,9 +45,4 @@ class BigDealsSpider(scrapy.Spider):
         # Pagination
         next_page = response.css('a[rel="next"]::attr(href)').get()
         if next_page:
-            yield Request(
-                url=next_page, 
-                callback=self.parse,
-                dont_filter=True,
-                meta={"impersonate": "chrome116"}
-            )
+            yield Request(url=next_page, callback=self.parse)
