@@ -406,10 +406,10 @@
                             ${item.image_url ? `<img src="${item.image_url}" alt="${(item.title || '').replace(/"/g, '&quot;')}" loading="lazy">` : `<div class="no-image">No Image</div>`}
                         </div>
                         <div class="card-content">
-                            <h3 style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                <span>${item.title || 'Unknown Product'}</span>
-                                <svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                                <span class="title-tag tag-source" style="margin-left: auto;">${item.source_site.replace('.lk', '')}</span>
+                            <h3>
+                                ${item.title || 'Unknown Product'}
+                                <svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                <span class="title-tag tag-source">${item.source_site.replace('.lk', '')}</span>
                             </h3>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
                                 <p class="price" style="margin: 0;">${item.price || 'Price N/A'}</p>
