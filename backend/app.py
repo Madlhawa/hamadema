@@ -33,6 +33,7 @@ def indexing_policy():
 def search():
     query = request.args.get('q', '')
     sort_param = request.args.get('sort', '')
+    source_param = request.args.get('source', '')
     min_price = request.args.get('min_price', '')
     max_price = request.args.get('max_price', '')
     in_stock = request.args.get('in_stock', 'false').lower() == 'true'
@@ -46,7 +47,6 @@ def search():
     brand_param = request.args.get('brand', '')
     ram_param = request.args.get('ram', '')
     storage_param = request.args.get('storage', '')
-    source_site_param = request.args.get('source_site', '')
     
     if not meili_client:
         return jsonify({"error": "Search engine not available"}), 500
@@ -55,10 +55,14 @@ def search():
         search_params = {
             'limit': limit,
             'offset': offset,
-            'facets': ['category', 'brand', 'ram', 'storage', 'price_numeric', 'source_site']
+            'facets': ['category', 'brand', 'ram', 'storage', 'price_numeric']
         }
         
         filter_conditions = []
+        if source_param:
+            sources_filter = " OR ".join([f"source_site = '{s.strip()}'" for s in source_param.split(',') if s.strip()])
+            if sources_filter:
+                filter_conditions.append(f"({sources_filter})")
                 
         # Helper to apply facet filters
         def add_facet_filter(field, param_val):
@@ -71,7 +75,6 @@ def search():
         add_facet_filter('brand', brand_param)
         add_facet_filter('ram', ram_param)
         add_facet_filter('storage', storage_param)
-        add_facet_filter('source_site', source_site_param)
             
         if min_price and min_price.isdigit():
             filter_conditions.append(f"price_numeric >= {min_price}")
