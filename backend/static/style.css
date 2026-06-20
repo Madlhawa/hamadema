@@ -87,11 +87,12 @@ header p {
 
 .results-mode .header-container {
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
+    gap: 3rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -108,8 +109,8 @@ header p {
     transform: scale(1);
     margin-bottom: 0;
     flex: 1;
-    max-width: 500px;
-    margin-left: auto;
+    max-width: 600px;
+    margin-left: 0;
 }
 
 .search-box {
