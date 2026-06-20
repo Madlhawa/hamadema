@@ -4,15 +4,23 @@ from scrapy import Request
 class NanotekSpider(scrapy.Spider):
     name = "nanotek"
     allowed_domains = ["nanotek.lk"]
-    start_urls = [
-        "https://www.nanotek.lk/category/laptop",
-        "https://www.nanotek.lk/category/monitors-monitor-arms",
-        "https://www.nanotek.lk/category/speakers-headsets-ear-buds",
-        "https://www.nanotek.lk/category/keyboardmouse-gamepad-controller"
-    ]
-
     def start_requests(self):
-        for url in self.start_urls:
+        # Start at the homepage to dynamically extract category links
+        yield Request(
+            url="https://www.nanotek.lk/",
+            callback=self.parse_homepage,
+            meta={
+                "impersonate": "chrome116"
+            }
+        )
+
+    def parse_homepage(self, response):
+        category_links = set()
+        for href in response.css('a::attr(href)').getall():
+            if '/category/' in href:
+                category_links.add(response.urljoin(href))
+                
+        for url in category_links:
             yield Request(
                 url=url,
                 callback=self.parse,
