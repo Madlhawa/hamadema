@@ -54,7 +54,7 @@ class NanotekSpider(scrapy.Spider):
         if next_page:
             yield Request(
                 url=next_page,
-                callback=self.parse,
+                callback=self.parse_category,
                 meta={
                     "impersonate": "chrome116"
                 }
