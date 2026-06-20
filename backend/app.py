@@ -4,6 +4,7 @@ import psycopg2
 import os
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
 
 app = Flask(__name__)
 
@@ -15,6 +16,44 @@ try:
 except Exception as e:
     print(f"Could not connect to Meilisearch: {e}")
     meili_client = None
+
+@app.before_request
+def track_visitor():
+    if request.path.startswith('/static') or request.path.startswith('/admin'):
+        return
+        
+    visitor_id = request.cookies.get('visitor_id')
+    if not visitor_id:
+        visitor_id = str(uuid.uuid4())
+        request.new_visitor_id = visitor_id
+    else:
+        request.new_visitor_id = None
+        
+    request.visitor_id = visitor_id
+
+@app.after_request
+def set_visitor_cookie(response):
+    if getattr(request, 'new_visitor_id', None):
+        response.set_cookie('visitor_id', request.new_visitor_id, max_age=60*60*24*365*10)
+    return response
+
+@app.before_request
+def log_page_view():
+    if request.path.startswith('/static') or request.path.startswith('/admin') or request.path.startswith('/api'):
+        return
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO page_views (session_id, path) VALUES (%s, %s);",
+            (getattr(request, 'visitor_id', 'unknown'), request.path)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error logging page view: {e}")
 
 @app.route('/')
 def index():
@@ -101,11 +140,28 @@ def search():
             
         results = meili_client.index('items').search(query, search_params)
         
+        result_count = results.get('estimatedTotalHits', 0)
+        
+        # Log the search
+        if query.strip():
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO search_logs (session_id, query, result_count) VALUES (%s, %s, %s);",
+                    (getattr(request, 'visitor_id', 'unknown'), query.strip(), result_count)
+                )
+                conn.commit()
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error logging search: {e}")
+
         return jsonify({
-            'hits': results['hits'],
-            'totalHits': results.get('estimatedTotalHits', 0),
-            'page': page,
-            'limit': limit,
+            'hits': results.get('hits', []),
+            'totalHits': result_count,
+            'limit': results.get('limit', limit),
+            'offset': results.get('offset', offset),
             'facetDistribution': results.get('facetDistribution', {}),
             'facetStats': results.get('facetStats', {})
         })
@@ -130,6 +186,23 @@ def init_db():
             CREATE TABLE IF NOT EXISTS admin_config (
                 key VARCHAR(255) PRIMARY KEY,
                 value VARCHAR(255) NOT NULL
+            );
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS search_logs (
+                id SERIAL PRIMARY KEY,
+                session_id VARCHAR(255),
+                query VARCHAR(255),
+                result_count INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS page_views (
+                id SERIAL PRIMARY KEY,
+                session_id VARCHAR(255),
+                path VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         ''')
         cursor.execute("SELECT value FROM admin_config WHERE key = 'admin_password_hash';")
@@ -189,10 +262,15 @@ def requires_auth(f):
 @requires_auth
 def admin_dashboard():
     stats = []
+    top_searches = []
+    zero_searches = []
+    traffic = []
     error = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        
+        # Original Store Stats
         query = """
             SELECT source_site, COUNT(id) as item_count, MAX(scraped_at) as last_scraped
             FROM raw_items
@@ -207,12 +285,44 @@ def admin_dashboard():
                 "item_count": row[1],
                 "last_scraped": row[2]
             })
+            
+        # Top 10 Searches
+        cursor.execute("""
+            SELECT query, COUNT(*) as count 
+            FROM search_logs 
+            GROUP BY query 
+            ORDER BY count DESC 
+            LIMIT 10;
+        """)
+        top_searches = [{"query": r[0], "count": r[1]} for r in cursor.fetchall()]
+        
+        # Zero Result Searches
+        cursor.execute("""
+            SELECT query, COUNT(*) as count 
+            FROM search_logs 
+            WHERE result_count = 0 
+            GROUP BY query 
+            ORDER BY count DESC 
+            LIMIT 10;
+        """)
+        zero_searches = [{"query": r[0], "count": r[1]} for r in cursor.fetchall()]
+        
+        # Traffic (Last 7 Days)
+        cursor.execute("""
+            SELECT DATE(created_at) as date, COUNT(DISTINCT session_id) as users, COUNT(*) as pageviews
+            FROM page_views
+            WHERE created_at >= CURRENT_DATE - INTERVAL '6 days'
+            GROUP BY DATE(created_at)
+            ORDER BY date ASC;
+        """)
+        traffic = [{"date": r[0].strftime('%Y-%m-%d'), "users": r[1], "views": r[2]} for r in cursor.fetchall()]
+
         cursor.close()
         conn.close()
     except Exception as e:
         error = str(e)
         
-    return render_template('admin.html', stats=stats, error=error)
+    return render_template('admin.html', stats=stats, top_searches=top_searches, zero_searches=zero_searches, traffic=traffic, error=error)
 
 @app.route('/admin/change-password', methods=['POST'])
 @requires_auth

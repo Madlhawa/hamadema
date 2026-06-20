@@ -6,6 +6,7 @@
     <title>Hamadema - Admin Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background-color: #f8fafc;
@@ -156,8 +157,64 @@
                             </td>
                         </tr>
                     {% endif %}
+                    {% endif %}
                 </tbody>
             </table>
+        </div>
+
+        <h3 style="margin-top: 3rem;">Site Traffic (Last 7 Days)</h3>
+        <div class="stats-table-wrapper" style="padding: 1.5rem;">
+            <canvas id="trafficChart" height="100"></canvas>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;">
+            <div>
+                <h3>Top 10 Searched Terms</h3>
+                <div class="stats-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Query</th>
+                                <th style="text-align: right;">Searches</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for search in top_searches %}
+                            <tr>
+                                <td>{{ search.query }}</td>
+                                <td style="text-align: right;">{{ search.count }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="2"><div class="empty-state">No search data available.</div></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h3>Zero-Result Searches</h3>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: -0.5rem; margin-bottom: 1rem;">Queries that returned 0 hits (content gaps).</p>
+                <div class="stats-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Query</th>
+                                <th style="text-align: right;">Failed Searches</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for search in zero_searches %}
+                            <tr>
+                                <td style="color: #ef4444; font-weight: 500;">{{ search.query }}</td>
+                                <td style="text-align: right;">{{ search.count }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="2"><div class="empty-state">No zero-result searches found!</div></td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="stats-table-wrapper" style="margin-top: 3rem;">
             <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
@@ -213,7 +270,57 @@
                 msgDiv.innerHTML = 'Network error. Please try again.';
             }
         });
-    </script>
 
+        // Initialize Traffic Chart
+        const trafficData = {{ traffic | tojson | safe if traffic else '[]' }};
+        if (trafficData && trafficData.length > 0) {
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trafficData.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Unique Users',
+                            data: trafficData.map(d => d.users),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            fill: true
+                        },
+                        {
+                            label: 'Page Views',
+                            data: trafficData.map(d => d.views),
+                            borderColor: '#10b981',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
+        } else {
+            const canvas = document.getElementById('trafficChart');
+            if (canvas) {
+                const parent = canvas.parentElement;
+                parent.innerHTML = '<div class="empty-state">No traffic data recorded yet.</div>';
+            }
+        }
+    </script>
 </body>
 </html>
