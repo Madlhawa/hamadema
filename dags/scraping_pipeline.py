@@ -82,12 +82,48 @@ with DAG(
         bash_command='cd /opt/app/scraper && scrapy crawl wasi',
     )
 
-    # Task 11: Run the Transformer script
+    # Task 11: Run the Buyabans Scrapy Spider
+    run_buyabans_spider = BashOperator(
+        task_id='run_buyabans_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl buyabans',
+    )
+
+    # Task 12: Run the Celltronics Scrapy Spider
+    run_celltronics_spider = BashOperator(
+        task_id='run_celltronics_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl celltronics',
+    )
+
+    # Task 13: Run the Dinapalagroup Scrapy Spider
+    run_dinapalagroup_spider = BashOperator(
+        task_id='run_dinapalagroup_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl dinapalagroup',
+    )
+
+    # Task 14: Run the Lifemobile Scrapy Spider
+    run_lifemobile_spider = BashOperator(
+        task_id='run_lifemobile_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl lifemobile',
+    )
+
+    # Task 15: Run the Pettahkade Scrapy Spider
+    run_pettahkade_spider = BashOperator(
+        task_id='run_pettahkade_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl pettahkade',
+    )
+
+    # Task 16: Run the Catchme Scrapy Spider
+    run_catchme_spider = BashOperator(
+        task_id='run_catchme_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl catchme',
+    )
+
+    # Task 17: Run the Transformer script
     run_data_transformer = BashOperator(
         task_id='run_data_transformer',
         bash_command='cd /opt/app/transformer && python sync.py',
     )
 
     # Define execution order
-    run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_mysoftlogic_spider >> run_simplytek_spider >> run_wasi_spider >> run_data_transformer
-    run_bigdeals_spider >> run_redline_spider >> run_takas_spider >> run_singer_spider >> run_data_transformer
+    run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_mysoftlogic_spider >> run_simplytek_spider >> run_wasi_spider >> run_buyabans_spider >> run_celltronics_spider >> run_dinapalagroup_spider >> run_data_transformer
+    run_bigdeals_spider >> run_redline_spider >> run_takas_spider >> run_singer_spider >> run_lifemobile_spider >> run_pettahkade_spider >> run_catchme_spider >> run_data_transformer
