@@ -64,12 +64,30 @@ with DAG(
         bash_command='cd /opt/app/scraper && scrapy crawl takas',
     )
 
-    # Task 8: Run the Transformer script
+    # Task 8: Run the Simplytek Scrapy Spider
+    run_simplytek_spider = BashOperator(
+        task_id='run_simplytek_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl simplytek',
+    )
+
+    # Task 9: Run the Singer Scrapy Spider
+    run_singer_spider = BashOperator(
+        task_id='run_singer_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl singer',
+    )
+
+    # Task 10: Run the Wasi Scrapy Spider
+    run_wasi_spider = BashOperator(
+        task_id='run_wasi_spider',
+        bash_command='cd /opt/app/scraper && scrapy crawl wasi',
+    )
+
+    # Task 11: Run the Transformer script
     run_data_transformer = BashOperator(
         task_id='run_data_transformer',
         bash_command='cd /opt/app/transformer && python sync.py',
     )
 
     # Define execution order
-    run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_mysoftlogic_spider >> run_data_transformer
-    run_bigdeals_spider >> run_redline_spider >> run_takas_spider >> run_data_transformer
+    run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_mysoftlogic_spider >> run_simplytek_spider >> run_wasi_spider >> run_data_transformer
+    run_bigdeals_spider >> run_redline_spider >> run_takas_spider >> run_singer_spider >> run_data_transformer
