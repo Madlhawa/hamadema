@@ -21,7 +21,6 @@ class NanotekSpider(scrapy.Spider):
             # The URL is stored in the <a> tag wrapping the product block
             url = product.xpath('ancestor::a/@href').get()
             
-            # Extract basic product details
             title = product.css('.ty-productBlock-title h1::text').get()
             price = product.css('.ty-productBlock-price-retail::text').get()
             category = product.css('.ty-productBlock-cat::text').get()
@@ -31,6 +30,7 @@ class NanotekSpider(scrapy.Spider):
             # Clean up the text data
             title = title.strip() if title else ""
             price = price.strip() if price else ""
+            category = category.strip().title() if category else "Other"
             stock_msg = stock_msg.strip() if stock_msg else ""
             
             # Construct the raw JSONB payload

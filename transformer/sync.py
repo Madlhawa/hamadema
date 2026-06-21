@@ -144,6 +144,11 @@ def run_sync():
         
         facets = extract_facets(title)
         
+        # Override with scraped category if available and valid
+        scraped_cat = payload.get("category", "")
+        if scraped_cat and scraped_cat.lower() not in ["other", "uncategorized", ""]:
+            facets["category"] = scraped_cat
+        
         url = payload.get("url", "")
         doc_id = hashlib.md5(url.encode('utf-8')).hexdigest() if url else str(item_id)
         

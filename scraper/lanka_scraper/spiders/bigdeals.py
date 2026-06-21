@@ -24,9 +24,12 @@ class BigDealsSpider(scrapy.Spider):
                     category_links.add(href)
 
         for url in category_links:
-            yield Request(url=url, callback=self.parse_category)
+            cat = url.rstrip('/').split('/')[-1]
+            cat_name = cat.replace('-', ' ').title()
+            yield Request(url=url, callback=self.parse_category, meta={"category": cat_name})
 
     def parse_category(self, response):
+        category = response.meta.get("category", "Other")
         products = response.css(".product-container")
         for product in products:
             title = product.css(".product-title::text").get()
@@ -46,6 +49,7 @@ class BigDealsSpider(scrapy.Spider):
                     "price": price_clean,
                     "url": url,
                     "image_url": image_url,
+                    "category": category,
                     "in_stock": in_stock,
                     "stock_status": "In Stock" if in_stock else "Out of Stock",
                     "store": "Bigdeals",
@@ -59,4 +63,4 @@ class BigDealsSpider(scrapy.Spider):
         # Pagination
         next_page = response.css('a[rel="next"]::attr(href)').get()
         if next_page:
-            yield Request(url=next_page, callback=self.parse_category)
+            yield Request(url=next_page, callback=self.parse_category, meta={"category": category})

@@ -21,13 +21,15 @@ class TecrootSpider(scrapy.Spider):
                 category_links.add(href)
                 
         for url in category_links:
+            cat_name = url.split('/product-category/')[1].split('/')[0].replace('-', ' ').title()
             yield Request(
                 url=url, 
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116"}
+                meta={"impersonate": "chrome116", "category": cat_name}
             )
 
     def parse_category(self, response):
+        category = response.meta.get("category", "Other")
         products = response.css(".product")
         for product in products:
             title = product.css(".woocommerce-loop-product__title::text").get()
@@ -69,6 +71,7 @@ class TecrootSpider(scrapy.Spider):
                         "price": price_clean,
                         "url": url,
                         "image_url": image_url,
+                        "category": category,
                         "in_stock": in_stock,
                         "stock_status": "In Stock" if in_stock else "Out of Stock",
                         "store": "TecRoot",
@@ -85,5 +88,5 @@ class TecrootSpider(scrapy.Spider):
             yield Request(
                 url=next_page, 
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116"}
+                meta={"impersonate": "chrome116", "category": category}
             )
