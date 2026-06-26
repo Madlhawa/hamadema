@@ -62,8 +62,6 @@ services:
   backend:
     build: ./backend
     container_name: flask_backend
-    ports:
-      - "80:5000"
     environment:
       - MEILI_HOST=http://meilisearch:7700
       - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKeyToChange123}
@@ -74,6 +72,20 @@ services:
     depends_on:
       - meilisearch
     restart: unless-stopped
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy_server
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
 
   airflow-init:
     <<: *airflow-common
@@ -116,3 +128,5 @@ volumes:
   postgres_data:
   meilisearch_data:
   airflow_logs:
+  caddy_data:
+  caddy_config:
