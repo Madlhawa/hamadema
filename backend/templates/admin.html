@@ -215,6 +215,33 @@
                 </div>
             </div>
         </div>
+
+        <h3 style="margin-top: 3rem; color: #ef4444;">Security Audit Log (Suspicious Bot Traffic)</h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: -0.5rem; margin-bottom: 1rem;">Recent 404s and vulnerability scans blocked by the server.</p>
+        <div class="stats-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>IP Address</th>
+                        <th>Attempted Path</th>
+                        <th>User-Agent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in suspicious_logs %}
+                    <tr>
+                        <td style="white-space: nowrap; font-size: 0.85rem;">{{ log.date }}</td>
+                        <td style="font-family: monospace; font-size: 0.85rem;">{{ log.ip }}</td>
+                        <td style="color: #ef4444; font-family: monospace; word-break: break-all; font-size: 0.85rem;">{{ log.path }}</td>
+                        <td style="font-size: 0.8rem; color: #64748b;">{{ log.ua }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4"><div class="empty-state">No malicious activity recorded recently. Stay safe!</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <div class="stats-table-wrapper" style="margin-top: 3rem;">
             <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
                 <h2 style="margin: 0; font-size: 1.25rem;">Security Settings</h2>

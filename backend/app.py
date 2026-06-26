@@ -43,11 +43,17 @@ def log_page_view():
         return
         
     try:
+        ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+        if ip_address:
+            ip_address = ip_address.split(',')[0].strip()
+        user_agent = request.user_agent.string
+        category = 'legitimate' if request.endpoint else 'suspicious'
+
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO page_views (session_id, path) VALUES (%s, %s);",
-            (getattr(request, 'visitor_id', 'unknown'), request.path)
+            "INSERT INTO page_views (session_id, path, ip_address, user_agent, category) VALUES (%s, %s, %s, %s, %s);",
+            (getattr(request, 'visitor_id', 'unknown'), request.path, ip_address, user_agent, category)
         )
         conn.commit()
         cursor.close()
@@ -206,6 +212,9 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         ''')
+        cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45);")
+        cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS user_agent TEXT;")
+        cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS category VARCHAR(50);")
         cursor.execute("SELECT value FROM admin_config WHERE key = 'admin_password_hash';")
         row = cursor.fetchone()
         
@@ -312,18 +321,29 @@ def admin_dashboard():
         cursor.execute("""
             SELECT DATE(created_at) as date, COUNT(DISTINCT session_id) as users, COUNT(*) as pageviews
             FROM page_views
-            WHERE created_at >= CURRENT_DATE - INTERVAL '6 days'
+            WHERE created_at >= CURRENT_DATE - INTERVAL '6 days' AND (category = 'legitimate' OR category IS NULL)
             GROUP BY DATE(created_at)
             ORDER BY date ASC;
         """)
         traffic = [{"date": r[0].strftime('%Y-%m-%d'), "users": r[1], "views": r[2]} for r in cursor.fetchall()]
 
+        # Suspicious Logs (Security Audit)
+        cursor.execute("""
+            SELECT path, ip_address, user_agent, created_at 
+            FROM page_views 
+            WHERE category = 'suspicious' 
+            ORDER BY created_at DESC 
+            LIMIT 50;
+        """)
+        suspicious_logs = [{"path": r[0], "ip": r[1], "ua": r[2], "date": r[3].strftime('%Y-%m-%d %H:%M:%S')} for r in cursor.fetchall()]
+
         cursor.close()
         conn.close()
     except Exception as e:
         error = str(e)
+        suspicious_logs = []
         
-    return render_template('admin.html', stats=stats, top_searches=top_searches, zero_searches=zero_searches, traffic=traffic, error=error)
+    return render_template('admin.html', stats=stats, top_searches=top_searches, zero_searches=zero_searches, traffic=traffic, suspicious_logs=suspicious_logs, error=error)
 
 @app.route('/admin/change-password', methods=['POST'])
 @requires_auth
