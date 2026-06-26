@@ -33,9 +33,15 @@ if [ ! -f .env ]; then
     echo "Creating .env file..."
     read -p "Enter a secure PostgreSQL Password: " POSTGRES_PASS
     read -p "Enter a secure Meilisearch Master Key: " MEILI_KEY
+    read -p "Enter Decodo Proxy Username (e.g., spgqueytu9): " DECODO_USER
+    read -p "Enter Decodo Proxy Password: " DECODO_PASS
 
     echo "POSTGRES_PASSWORD=$POSTGRES_PASS" > .env
     echo "MEILI_MASTER_KEY=$MEILI_KEY" >> .env
+    echo "PROXY_USERNAME=$DECODO_USER" >> .env
+    echo "PROXY_PASSWORD=$DECODO_PASS" >> .env
+    echo "PROXY_HOST=gate.decodo.com" >> .env
+    echo "PROXY_PORT=10001" >> .env
     echo ".env file created securely."
 else
     echo ".env file already exists. Skipping..."
