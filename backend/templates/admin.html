@@ -114,13 +114,13 @@
             </div>
         {% endif %}
 
-        {% set total_items = 0 %}
+        {% set ns = namespace(total_items=0) %}
         {% for stat in stats %}
-            {% set total_items = total_items + stat.item_count %}
+            {% set ns.total_items = ns.total_items + stat.item_count %}
         {% endfor %}
 
         <div class="total-card">
-            <div class="total-value">{{ "{:,}".format(total_items) }}</div>
+            <div class="total-value">{{ "{:,}".format(ns.total_items) }}</div>
             <div class="total-label">Total Indexed Items Across All Stores</div>
         </div>
 
