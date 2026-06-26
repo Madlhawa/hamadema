@@ -16,7 +16,7 @@ class SingerSpider(scrapy.Spider):
 
     def start_requests(self):
         for url in self.start_urls:
-            yield Request(url=url, callback=self.parse_homepage_categories, meta={"impersonate": "chrome116"})
+            yield Request(url=url, callback=self.parse_homepage_categories)
 
     def parse_homepage_categories(self, response):
         # Find all category links in the electronics submenu or dropdowns
@@ -33,7 +33,7 @@ class SingerSpider(scrapy.Spider):
             yield Request(
                 url=url, 
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116", "category": cat_name}
+                meta={"category": cat_name}
             )
 
     def parse_category(self, response):
@@ -88,5 +88,5 @@ class SingerSpider(scrapy.Spider):
             yield Request(
                 url=next_page,
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116", "category": category}
+                meta={"category": category}
             )
