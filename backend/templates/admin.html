@@ -166,6 +166,11 @@
             <canvas id="trafficChart" height="100"></canvas>
         </div>
 
+        <h3 style="margin-top: 3rem;">Daily Indexed Items (Last 7 Days)</h3>
+        <div class="stats-table-wrapper" style="padding: 1.5rem;">
+            <canvas id="scraperHistoryChart" height="100"></canvas>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem;">
             <div>
                 <h3>Top 10 Searched Terms</h3>
@@ -345,6 +350,55 @@
             if (canvas) {
                 const parent = canvas.parentElement;
                 parent.innerHTML = '<div class="empty-state">No traffic data recorded yet.</div>';
+            }
+        }
+
+        // Initialize Scraper History Chart
+        const scraperHistoryData = {{ scraper_history | tojson | safe }};
+        if (scraperHistoryData && scraperHistoryData.length > 0) {
+            const ctxHistory = document.getElementById('scraperHistoryChart').getContext('2d');
+            
+            // Extract all unique stores across all dates
+            const allStores = new Set();
+            scraperHistoryData.forEach(d => {
+                Object.keys(d.stores).forEach(s => allStores.add(s));
+            });
+            const storesList = Array.from(allStores).sort();
+            
+            // Generate visually distinct colors
+            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
+            
+            const datasets = storesList.map((store, i) => {
+                return {
+                    label: store,
+                    data: scraperHistoryData.map(d => d.stores[store] || 0),
+                    backgroundColor: colors[i % colors.length],
+                };
+            });
+            
+            new Chart(ctxHistory, {
+                type: 'bar',
+                data: {
+                    labels: scraperHistoryData.map(d => d.date),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        } else {
+            const canvas = document.getElementById('scraperHistoryChart');
+            if (canvas) {
+                const parent = canvas.parentElement;
+                parent.innerHTML = '<div class="empty-state">No historical data recorded yet. Wait for tomorrow!</div>';
             }
         }
     </script>

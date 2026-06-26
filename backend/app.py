@@ -215,6 +215,17 @@ def init_db():
         cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45);")
         cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS user_agent TEXT;")
         cursor.execute("ALTER TABLE page_views ADD COLUMN IF NOT EXISTS category VARCHAR(50);")
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS scraper_stats_history (
+                id SERIAL PRIMARY KEY,
+                source_site VARCHAR(100),
+                item_count INT,
+                recorded_at DATE DEFAULT CURRENT_DATE,
+                UNIQUE(source_site, recorded_at)
+            );
+        ''')
+        
         cursor.execute("SELECT value FROM admin_config WHERE key = 'admin_password_hash';")
         row = cursor.fetchone()
         
@@ -337,13 +348,35 @@ def admin_dashboard():
         """)
         suspicious_logs = [{"path": r[0], "ip": r[1], "ua": r[2], "date": r[3].strftime('%Y-%m-%d %H:%M:%S')} for r in cursor.fetchall()]
 
+        # Scraper History (Last 7 Days)
+        cursor.execute("""
+            SELECT recorded_at, source_site, item_count
+            FROM scraper_stats_history
+            WHERE recorded_at >= CURRENT_DATE - INTERVAL '6 days'
+            ORDER BY recorded_at ASC, source_site ASC;
+        """)
+        scraper_history_raw = cursor.fetchall()
+        
+        # Format scraper history for Chart.js
+        scraper_history_dict = {}
+        for r in scraper_history_raw:
+            date_str = r[0].strftime('%Y-%m-%d')
+            site = r[1]
+            count = r[2]
+            if date_str not in scraper_history_dict:
+                scraper_history_dict[date_str] = {}
+            scraper_history_dict[date_str][site] = count
+            
+        scraper_history = [{"date": k, "stores": v} for k, v in scraper_history_dict.items()]
+
         cursor.close()
         conn.close()
     except Exception as e:
         error = str(e)
         suspicious_logs = []
+        scraper_history = []
         
-    return render_template('admin.html', stats=stats, top_searches=top_searches, zero_searches=zero_searches, traffic=traffic, suspicious_logs=suspicious_logs, error=error)
+    return render_template('admin.html', stats=stats, top_searches=top_searches, zero_searches=zero_searches, traffic=traffic, suspicious_logs=suspicious_logs, scraper_history=scraper_history, error=error)
 
 @app.route('/admin/change-password', methods=['POST'])
 @requires_auth

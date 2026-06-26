@@ -124,6 +124,14 @@ with DAG(
         bash_command='cd /opt/app/transformer && python sync.py',
     )
 
+    # Task 18: Record Daily Stats Snapshot
+    record_scraper_stats = BashOperator(
+        task_id='record_scraper_stats',
+        bash_command='cd /opt/app/transformer && python snapshot_stats.py',
+    )
+
     # Define execution order
     run_nanotek >> run_tecroot_spider >> run_mydealz_spider >> run_mysoftlogic_spider >> run_simplytek_spider >> run_wasi_spider >> run_buyabans_spider >> run_celltronics_spider >> run_dinapalagroup_spider >> run_data_transformer
     run_bigdeals_spider >> run_redline_spider >> run_takas_spider >> run_singer_spider >> run_lifemobile_spider >> run_pettahkade_spider >> run_catchme_spider >> run_data_transformer
+    
+    run_data_transformer >> record_scraper_stats
