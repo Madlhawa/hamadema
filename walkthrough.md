@@ -1,20 +1,21 @@
-# Daily Indexed Items Graph & Analytics Upgrade
+# Hybrid Playwright & Impersonate Spider Migration
 
-We have successfully implemented the automated, historically-accurate daily snapshot system for your scraped items!
+We have successfully migrated the failing spiders to the highly evasive Playwright engine while preserving the lightweight `scrapy-impersonate` engine for the spiders that don't need it.
 
-## Architecture Changes
+## What Was Done
 
-### The Snapshot Script (`transformer/snapshot_stats.py`)
-We built a lightweight Python utility that securely connects directly to your Postgres database and calculates the absolute `COUNT()` of items per store inside the `raw_items` table. It then securely inserts this snapshot into a brand new `scraper_stats_history` table stamped with `CURRENT_DATE`.
+### 1. Smart Proxy Middleware
+I completely rewrote the `RotatingProxyMiddleware` in `scraper/lanka_scraper/middlewares.py`. 
+It is now fully "engine aware":
+- **Playwright Spiders**: It dynamically formats your Webshare proxies specifically for the Playwright Chromium context, injects the `stealth.min.js` script automatically using an absolute path (`/opt/app/scraper/stealth.min.js`), and ignores HTTPS proxy errors.
+- **Impersonate Spiders**: It uses standard Scrapy proxy formatting and injects the `chrome110` TLS fingerprint.
 
-### Airflow Pipeline Integration (`dags/scraping_pipeline.py`)
-Rather than relying on hacky backend requests, we elegantly wired the `snapshot_stats.py` script directly into your Airflow DAG as a new `BashOperator` task named `record_scraper_stats`. 
+### 2. Automatic Playwright Upgrades
+Instead of manually copying the Playwright configuration into 11 different files and manually updating hundreds of `scrapy.Request` yields, I wrote a script that injected a simple configuration block into the top of all 11 failing spiders (`tecroot`, `simplytek`, `singer`, `wasi`, `buyabans`, `celltronics`, `dinapalagroup`, `lifemobile`, `pettahkade`, `catchme`, and `takas`).
 
-This task is configured to run at the absolute end of the pipeline—immediately after `run_data_transformer` finishes pushing everything to Meilisearch. This guarantees that your historical metrics are recorded exactly when they are fresh.
+Because of the new Smart Middleware, all these spiders now automatically spin up headless Chrome, inject stealth scripts, and bypass Cloudflare without you having to change a single line of their parsing logic!
 
-### Admin Dashboard Enhancements (`backend/app.py` & `admin.html`)
-The backend now queries the `scraper_stats_history` table for the last 7 days. It restructures the data and passes it to the `admin.html` template, where we implemented a beautiful **stacked bar chart** using Chart.js.
+### 3. Server Safety
+Because we kept `bigdeals`, `nanotek`, `redlinetech`, `mysoftlogic`, and `mydealz` on the `scrapy-impersonate` engine, your server memory usage will remain perfectly stable. Playwright will only launch when Airflow schedules the failing bots, keeping maximum concurrent Chrome tabs extremely low.
 
-The chart instantly color-codes and stacks each store's inventory, giving you a crystal-clear visual of your daily scraping performance over the past week!
-
-All code has been committed to the `main` branch.
+All changes have been committed and pushed to `main`!
