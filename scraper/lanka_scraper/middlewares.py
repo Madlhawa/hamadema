@@ -44,6 +44,10 @@ class RotatingProxyMiddleware:
         
         if use_playwright:
             request.meta['playwright'] = True
+
+            # Handle HTTP 403 responses to allow Playwright to retry
+            request.meta['handle_httpstatus_list'] = [403]
+
             # Inject stealth evasion script for Cloudflare
             request.meta['playwright_page_init_scripts'] = [
                 {"path": "/opt/app/scraper/stealth.min.js"}
@@ -79,6 +83,14 @@ class RotatingProxyMiddleware:
                     "password": password
                 }
                 context_kwargs['ignore_https_errors'] = True
+                
+                # Extract User-Agent from request headers if available
+                ua = request.headers.get('User-Agent')
+                if ua:
+                    context_kwargs['user_agent'] = ua.decode('utf-8')
+                else:
+                    context_kwargs['user_agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    
                 request.meta['playwright_context_kwargs'] = context_kwargs
                 self.logger.debug(f"Using Playwright proxy for {request.url}")
             except Exception as e:
