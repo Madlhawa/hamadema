@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+from scrapy_playwright.page import PageMethod
 
 class RotatingProxyMiddleware:
     """
@@ -47,6 +48,13 @@ class RotatingProxyMiddleware:
             request.meta['playwright_page_init_scripts'] = [
                 {"path": "/opt/app/scraper/stealth.min.js"}
             ]
+            
+            # Inject 8-second delay to bypass Turnstile/Cloudflare challenges
+            existing_methods = request.meta.get('playwright_page_methods', [])
+            # Avoid appending it twice if the spider already defined it
+            if not any(m.method == "wait_for_timeout" for m in existing_methods):
+                existing_methods.append(PageMethod("wait_for_timeout", 8000))
+            request.meta['playwright_page_methods'] = existing_methods
         else:
             # Default to impersonate for lightweight scraping
             request.meta['impersonate'] = 'chrome110'
