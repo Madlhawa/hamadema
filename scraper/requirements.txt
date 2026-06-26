@@ -1,3 +1,4 @@
 scrapy
+scrapy-playwright
 scrapy-impersonate
 psycopg2-binary

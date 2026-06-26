@@ -1,14 +1,42 @@
 import scrapy
 from scrapy.http import Request
+from scrapy_playwright.page import PageMethod
 
 class TakasSpider(scrapy.Spider):
     name = "takas"
     allowed_domains = ["takas.lk"]
-    start_urls = ["https://takas.lk/"]
+
+    # Playwright requires its own handler, overriding the global impersonate handler
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
+
+    # 1. Define your bypass settings as class variables so they are reusable
+    custom_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+
+    playwright_bypass_meta = {
+        "playwright": True,
+        "handle_httpstatus_list": [403],
+        "playwright_page_init_scripts": [
+            {"path": "stealth.min.js"}
+        ],
+        "playwright_page_methods": [
+            PageMethod("wait_for_timeout", 8000), 
+        ]
+    }
 
     def start_requests(self):
-        for url in self.start_urls:
-            yield Request(url=url, callback=self.parse, meta={"impersonate": "chrome116"})
+        yield scrapy.Request(
+            url="https://takas.lk/", 
+            callback=self.parse,
+            headers=self.custom_headers,
+            meta=self.playwright_bypass_meta
+        )
 
     def parse(self, response):
         category_links = set()
@@ -19,16 +47,20 @@ class TakasSpider(scrapy.Spider):
                 category_links.add(href)
                 
         for url in category_links:
-            # Extract category name
             parts = url.replace('https://takas.lk/', '').replace('.html', '').split('/')
             cat_name = parts[-1].replace('-', ' ').title()
             if cat_name.lower() in ["offers", "deals"]:
                 continue
+            
+            # 2. Copy the bypass meta and add your category tag
+            req_meta = self.playwright_bypass_meta.copy()
+            req_meta["category"] = cat_name
                 
             yield Request(
                 url=url, 
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116", "category": cat_name}
+                headers=self.custom_headers, # Keep the human User-Agent
+                meta=req_meta                # Keep Playwright engaged
             )
 
     def parse_category(self, response):
@@ -81,8 +113,13 @@ class TakasSpider(scrapy.Spider):
         # Pagination
         next_page = response.css("a.next::attr(href)").get()
         if next_page:
+            # 3. Keep the bypass meta going for the next pages
+            req_meta = self.playwright_bypass_meta.copy()
+            req_meta["category"] = category
+            
             yield Request(
                 url=next_page,
                 callback=self.parse_category,
-                meta={"impersonate": "chrome116", "category": category}
+                headers=self.custom_headers,
+                meta=req_meta
             )

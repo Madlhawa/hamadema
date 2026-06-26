@@ -1,4 +1,5 @@
 scrapy
 scrapy-impersonate
+scrapy-playwright
 psycopg2-binary
 meilisearch
