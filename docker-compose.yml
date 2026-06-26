@@ -18,6 +18,10 @@ x-airflow-common:
     MEILI_HOST: http://meilisearch:7700
     MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKeyToChange123}
     PROXY_LIST: ${PROXY_LIST:-}
+    PROXY_USERNAME: ${PROXY_USERNAME:-}
+    PROXY_PASSWORD: ${PROXY_PASSWORD:-}
+    PROXY_HOST: ${PROXY_HOST:-gate.decodo.com}
+    PROXY_PORT: ${PROXY_PORT:-10001}
   volumes:
     - ./dags:/opt/airflow/dags
     - ./scraper:/opt/app/scraper

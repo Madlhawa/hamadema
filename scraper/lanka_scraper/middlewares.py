@@ -14,7 +14,19 @@ class RotatingProxyMiddleware:
         self.logger = logging.getLogger(__name__)
         self.proxies = []
         
-        # Look for proxies.txt in the current directory (should be the scraper directory)
+        # 1. Check for dynamic proxy configuration via Environment Variables (Decodo etc.)
+        proxy_username = os.environ.get('PROXY_USERNAME')
+        proxy_password = os.environ.get('PROXY_PASSWORD')
+        proxy_host = os.environ.get('PROXY_HOST', 'gate.decodo.com')
+        proxy_port = os.environ.get('PROXY_PORT', '10001')
+        
+        if proxy_username and proxy_password:
+            formatted_proxy = f"http://{proxy_username}:{proxy_password}@{proxy_host}:{proxy_port}"
+            self.proxies.append(formatted_proxy)
+            self.logger.info(f"Loaded dynamic rotating proxy from environment variables: {proxy_host}:{proxy_port}")
+            return # Skip loading from proxies.txt if environment overrides are present
+            
+        # 2. Fall back to proxies.txt file
         proxy_file = os.path.join(os.getcwd(), 'proxies.txt')
         
         if os.path.exists(proxy_file):
