@@ -84,12 +84,9 @@ class RotatingProxyMiddleware:
                 }
                 context_kwargs['ignore_https_errors'] = True
                 
-                # Extract User-Agent from request headers if available
-                ua = request.headers.get('User-Agent')
-                if ua:
-                    context_kwargs['user_agent'] = ua.decode('utf-8')
-                else:
-                    context_kwargs['user_agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                # Omit User-Agent to let Playwright use its default real Chromium User-Agent,
+                # or use a modern hardcoded one so Cloudflare doesn't block the Scrapy default UA.
+                context_kwargs['user_agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                     
                 request.meta['playwright_context_kwargs'] = context_kwargs
                 self.logger.debug(f"Using Playwright proxy for {request.url}")
