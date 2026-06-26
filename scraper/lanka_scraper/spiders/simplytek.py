@@ -5,6 +5,14 @@ class SimplytekSpider(scrapy.Spider):
     name = "simplytek"
     allowed_domains = ["simplytek.lk"]
 
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
+
     def start_requests(self):
         url = "https://www.simplytek.lk/products.json?limit=250&page=1"
         yield scrapy.Request(url=url, callback=self.parse, meta={"page": 1})

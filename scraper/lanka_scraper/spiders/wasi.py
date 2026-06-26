@@ -4,6 +4,14 @@ from scrapy.http import Request
 class WasiSpider(scrapy.Spider):
     name = "wasi"
     allowed_domains = ["wasi.lk"]
+
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
     start_urls = ["https://www.wasi.lk/"]
 
     def start_requests(self):

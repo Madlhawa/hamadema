@@ -38,12 +38,44 @@ class RotatingProxyMiddleware:
             self.logger.warning(f"No proxies.txt file found at {proxy_file}. Requests will not be proxied.")
 
     def process_request(self, request, spider):
+        # Check if the spider opted into Playwright
+        use_playwright = getattr(spider, 'use_playwright', False)
+        
+        if use_playwright:
+            request.meta['playwright'] = True
+            # Inject stealth evasion script for Cloudflare
+            request.meta['playwright_page_init_scripts'] = [
+                {"path": "/opt/app/scraper/stealth.min.js"}
+            ]
+        else:
+            # Default to impersonate for lightweight scraping
+            request.meta['impersonate'] = 'chrome110'
+
         if not self.proxies:
             return
 
         # Choose a random proxy
         proxy = random.choice(self.proxies)
         
-        # Assign to request meta
-        request.meta['proxy'] = proxy
-        self.logger.debug(f"Using proxy {proxy} for {request.url}")
+        if use_playwright:
+            # Playwright uses a special context argument for proxies
+            try:
+                # proxy format: http://username:password@ip:port
+                auth_part, ip_port = proxy.replace('http://', '').split('@')
+                username, password = auth_part.split(':')
+                
+                context_kwargs = request.meta.get('playwright_context_kwargs', {})
+                context_kwargs['proxy'] = {
+                    "server": f"http://{ip_port}",
+                    "username": username,
+                    "password": password
+                }
+                context_kwargs['ignore_https_errors'] = True
+                request.meta['playwright_context_kwargs'] = context_kwargs
+                self.logger.debug(f"Using Playwright proxy for {request.url}")
+            except Exception as e:
+                self.logger.error(f"Failed to parse Playwright proxy: {e}")
+        else:
+            # Standard Scrapy Impersonate proxy format
+            request.meta['proxy'] = proxy
+            self.logger.debug(f"Using Impersonate proxy {proxy} for {request.url}")

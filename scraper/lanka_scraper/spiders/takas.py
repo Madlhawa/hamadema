@@ -5,6 +5,7 @@ from scrapy_playwright.page import PageMethod
 class TakasSpider(scrapy.Spider):
     name = "takas"
     allowed_domains = ["takas.lk"]
+    use_playwright = True
 
     # Playwright requires its own handler, overriding the global impersonate handler
     custom_settings = {

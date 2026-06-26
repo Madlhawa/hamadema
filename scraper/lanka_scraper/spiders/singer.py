@@ -4,6 +4,14 @@ from scrapy.http import Request
 class SingerSpider(scrapy.Spider):
     name = "singer"
     allowed_domains = ["singersl.com"]
+
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
     start_urls = ["https://www.singersl.com/products/electronics"]
 
     def start_requests(self):

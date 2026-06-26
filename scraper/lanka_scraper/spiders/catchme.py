@@ -4,6 +4,14 @@ from scrapy.http import Request
 class CatchmeSpider(scrapy.Spider):
     name = "catchme"
     allowed_domains = ["catchme.lk"]
+
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
     start_urls = ["https://catchme.lk/"]
 
     def start_requests(self):

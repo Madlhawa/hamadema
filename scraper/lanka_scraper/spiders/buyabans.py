@@ -5,6 +5,14 @@ class BuyabansSpider(scrapy.Spider):
     name = "buyabans"
     allowed_domains = ["buyabans.com"]
 
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
+
     def start_requests(self):
         url = "https://buyabans.com/products.json?limit=250&page=1"
         yield scrapy.Request(url=url, callback=self.parse, meta={"page": 1})

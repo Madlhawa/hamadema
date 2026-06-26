@@ -4,6 +4,14 @@ from scrapy.http import Request
 class TecrootSpider(scrapy.Spider):
     name = "tecroot"
     allowed_domains = ["tecroot.lk"]
+
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
     start_urls = [
         "https://tecroot.lk/"
     ]

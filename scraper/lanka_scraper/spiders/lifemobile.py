@@ -4,6 +4,14 @@ from scrapy.http import Request
 class LifemobileSpider(scrapy.Spider):
     name = "lifemobile"
     allowed_domains = ["lifemobile.lk"]
+
+    use_playwright = True
+    custom_settings = {
+        "DOWNLOAD_HANDLERS": {
+            "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+            "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+        }
+    }
     start_urls = ["https://lifemobile.lk/"]
 
     def start_requests(self):
